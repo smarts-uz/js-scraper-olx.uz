@@ -3,7 +3,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { categories } from "./parseCat.js";
 
-async function initializeCategories() {
+export async function initializeCategories() {
   const db = await open({
     filename: "./categories.db", // файл базы данных
     driver: sqlite3.Database,
@@ -41,8 +41,5 @@ async function initializeCategories() {
   await db.close();
 }
 
-try {
-  await initializeCategories();
-} catch (err) {
-  console.error("Ошибка initializeCategories:", err);
-}
+// Removed direct execution - now this function is exported
+// and can be called from getCategories.js
