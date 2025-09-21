@@ -1,0 +1,27 @@
+{
+  "name": "olx-category-scraper",
+  "version": "1.0.0",
+  "description": "Simple OLX.uz category scraper with PostgreSQL storage",
+  "main": "getCategories.js",
+  "type": "module",
+  "scripts": {
+    "start": "node getCategories.js",
+    "scrape": "node getCategories.js"
+  },
+  "keywords": [
+    "scraping",
+    "olx",
+    "categories",
+    "cheerio",
+    "postgresql"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "pg": "^8.16.3",
+    "puppeteer": "^24.22.0",
+    "puppeteer-core": "^24.22.0"
+  }
+}
