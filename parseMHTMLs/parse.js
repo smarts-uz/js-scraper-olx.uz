@@ -70,7 +70,11 @@ function readUrlsFromDirectory(dirPath) {
       // Extract URL from .url file content
       const urlMatch = content.match(/URL=(.*)/i);
       if (urlMatch && urlMatch[1]) {
-        urls.push(urlMatch[1].trim());
+        urls.push({
+          url: urlMatch[1].trim(),
+          filePath: filePath,
+          fileName: file
+        });
       }
     }
   }
@@ -80,24 +84,42 @@ function readUrlsFromDirectory(dirPath) {
 
 /**
  * Processes all .url files from input directory and saves MHTML files to output directory
+ * Moves processed .url files to an "Other" directory
  * @param {string} inputDir - Directory containing .url files
  * @param {string} outputDir - Directory to save MHTML files
+ * @param {string} otherDir - Directory to move processed .url files (default: "Other" subdirectory of inputDir)
  */
-export async function processUrlFiles(inputDir, outputDir) {
+export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
+  // Set default otherDir if not provided
+  if (!otherDir) {
+    otherDir = path.join(inputDir, "Other");
+  }
+  
   console.log(`📂 Reading .url files from: ${inputDir}`);
   console.log(`💾 Saving MHTML files to: ${outputDir}`);
+  console.log(`📁 Moving processed .url files to: ${otherDir}`);
+  
+  // Create directories if they don't exist
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  
+  if (!fs.existsSync(otherDir)) {
+    fs.mkdirSync(otherDir, { recursive: true });
+  }
   
   // Read URLs from .url files
-  const urls = readUrlsFromDirectory(inputDir);
-  console.log(`🔗 Found ${urls.length} URLs to process`);
+  const urlObjects = readUrlsFromDirectory(inputDir);
+  console.log(`🔗 Found ${urlObjects.length} URLs to process`);
   
-  if (urls.length === 0) {
+  if (urlObjects.length === 0) {
     console.log("📭 No .url files found in the input directory");
     return;
   }
   
   // Launch browser
   const extensionPath = "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
+  const profilePath = "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\4f927d157bea46185cfac529ff7e553f";
   const browser = await puppeteer.launch({
     headless: false,
     slowMo: 100,
@@ -110,6 +132,7 @@ export async function processUrlFiles(inputDir, outputDir) {
       "--disable-features=HttpsUpgrades",
       "--disable-popup-blocking",
       "--hide-crash-restore-bubble",
+      `--user-data-dir=${profilePath}`,
       "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.7204.174 Safari/537.36",
       "--lang=en-US",
       "--window-position=0,0",
@@ -121,12 +144,17 @@ export async function processUrlFiles(inputDir, outputDir) {
   console.log("🌐 Browser launched");
   
   // Process each URL
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
-    console.log(`\n📝 Processing ${i + 1}/${urls.length}: ${url}`);
+  for (let i = 0; i < urlObjects.length; i++) {
+    const { url, filePath, fileName } = urlObjects[i];
+    console.log(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
     
     try {
       await scrapeAd(url, outputDir, browser);
+      
+      // Move the .url file to the "Other" directory
+      const destinationPath = path.join(otherDir, fileName);
+      fs.renameSync(filePath, destinationPath);
+      console.log(`➡️ Moved ${fileName} to ${otherDir}`);
     } catch (error) {
       console.error(`❌ Error processing ${url}: ${error.message}`);
     }
