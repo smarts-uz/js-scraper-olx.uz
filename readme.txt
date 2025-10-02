@@ -1,3 +1,0 @@
-node D:\FSystem\DEV\Git\js-scraper-olx.uz\saveURLs\saveURL.js "d:\FSystem\ALL\- Theory\BMW - Транспорт - OLX.uz.mhtml" 
-
-node D:\FSystem\DEV\Git\js-scraper-olx.uz\parseMHTMLs\saveMHTML.js "d:\FSystem\ALL\- Theory\app"

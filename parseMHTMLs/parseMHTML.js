@@ -1,8 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
+import dotenv from 'dotenv';
 
+// Load environment variables from .env file
+dotenv.config();
 
+/**
+ * Scrapes an ad from a URL and saves it as MHTML
+ */
 async function scrapeAd(url, saveDir, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
@@ -10,7 +16,7 @@ async function scrapeAd(url, saveDir, browser) {
   console.log(`➡️ Loading ad: ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-  // Show phone number
+  // Try to show phone number
   let phoneShown = false;
   try {
     await page.waitForSelector('button[data-testid="show-phone"]', { timeout: 5000 });
@@ -18,12 +24,11 @@ async function scrapeAd(url, saveDir, browser) {
     await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
     console.log("✅ Phone number displayed!");
     phoneShown = true;
-  } catch (err) {
+  } catch {
     console.warn("⚠️ Failed to display phone number.");
-    phoneShown = false;
   }
 
-  // Capture page snapshot (MHTML)
+  // Capture page snapshot as MHTML
   let data = null;
   try {
     const cdp = await page.target().createCDPSession();
@@ -34,15 +39,13 @@ async function scrapeAd(url, saveDir, browser) {
     console.error(`⚠️ Failed to capture MHTML for ${url}: ${err.message}`);
   }
 
-  // File name = page title
+  // Generate safe file name
   let title = await page.title();
   let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
   if (!safeName) safeName = `ad_${Date.now()}`;
   const filePath = path.join(saveDir, `${safeName}.mhtml`);
 
-  if (!fs.existsSync(saveDir)) {
-    fs.mkdirSync(saveDir, { recursive: true });
-  }
+  if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
 
   let savedPath = null;
   if (data) {
@@ -61,7 +64,7 @@ async function scrapeAd(url, saveDir, browser) {
 }
 
 /**
- * Launch a browser instance with given profile and extension
+ * Launch Chrome with a specific profile
  */
 async function launchBrowserWithProfile(extensionPath, userDataDir) {
   const args = [
@@ -84,14 +87,12 @@ async function launchBrowserWithProfile(extensionPath, userDataDir) {
     args.push(`--load-extension=${extensionPath}`);
   }
 
-  return await puppeteer.launch({
-    headless: false,
-    slowMo: 100,
-    args
-  });
+  return await puppeteer.launch({ headless: false, slowMo: 100, args });
 }
 
-
+/**
+ * Reads .url files from directory
+ */
 function readUrlsFromDirectory(dirPath) {
   const urls = [];
   const files = fs.readdirSync(dirPath);
@@ -100,18 +101,26 @@ function readUrlsFromDirectory(dirPath) {
     if (path.extname(file).toLowerCase() === '.url') {
       const filePath = path.join(dirPath, file);
       const content = fs.readFileSync(filePath, 'utf-8');
-
       const urlMatch = content.match(/URL=(.*)/i);
       if (urlMatch && urlMatch[1]) {
-        urls.push({
-          url: urlMatch[1].trim(),
-          filePath: filePath,
-          fileName: file
-        });
+        urls.push({ url: urlMatch[1].trim(), filePath, fileName: file });
       }
     }
   }
   return urls;
+}
+
+/**
+ * Reads profile directories from text file
+ */
+function readProfilesFromFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Profile list file not found: ${filePath}`);
+  }
+  return fs.readFileSync(filePath, "utf-8")
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length > 0);
 }
 
 /**
@@ -135,12 +144,10 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
   }
 
   // === CONFIG ===
-  const extensionPath = "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
-  const profileDirs = [
-    "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\fc42f8a0228a7c8a3d26b24835f9971b",
-    "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\fd30c293f724d89f8f1aaead951d17e6",
-    "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\4f927d157bea46185cfac529ff7e553f"
-  ];
+  const extensionPath = process.env.EXTENSION_PATH || "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
+  
+  const profileFilePath = process.env.PROFILE_FILE_PATH || "D:\\FSystem\\DEV\\Git\\js-scraper-olx.uz\\parseMHTMLs\\1.txt";
+  const profileDirs = readProfilesFromFile(profileFilePath);
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
@@ -168,12 +175,11 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
         if (phoneShown) {
           console.log(`✅ Phone shown with profile ${profile}`);
           success = true;
-          // ❗ shu profilda davom etadi
         } else {
           console.warn(`⚠️ Phone NOT shown with profile ${profile}`);
           if (currentProfileIndex === profileDirs.length - 1) {
             console.error("❌ All profiles failed. Stopping process...");
-            process.exit(1);   // ❗ to‘xtatadi
+            process.exit(1);
           }
           currentProfileIndex++;
         }
@@ -182,7 +188,7 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
         if (browser) { try { await browser.close(); } catch {} }
         if (currentProfileIndex === profileDirs.length - 1) {
           console.error("❌ All profiles failed. Stopping process...");
-          process.exit(1);   // ❗ to‘xtatadi
+          process.exit(1);
         }
         currentProfileIndex++;
       }
