@@ -2,10 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 
-/**
- * Scrapes an ad from a URL and saves it as MHTML
- * Returns { phoneShown: boolean, savedPath: string }
- */
+
 async function scrapeAd(url, saveDir, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
@@ -94,9 +91,7 @@ async function launchBrowserWithProfile(extensionPath, userDataDir) {
   });
 }
 
-/**
- * Reads .url files from a directory and extracts URLs
- */
+
 function readUrlsFromDirectory(dirPath) {
   const urls = [];
   const files = fs.readdirSync(dirPath);

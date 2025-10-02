@@ -1,9 +1,39 @@
 import { scrapeMultipleSearches } from "./parseUrl.js";
+import fs from "fs";
+import path from "path";
+
+// Get command line arguments
+const args = process.argv.slice(2);
+const mhtmlFilePath = args[0];
+
+if (!mhtmlFilePath) {
+  console.error("Please provide the path to the MHTML file as an argument.");
+  process.exit(1);
+}
+
+// Check if file exists
+if (!fs.existsSync(mhtmlFilePath)) {
+  console.error(`File not found: ${mhtmlFilePath}`);
+  process.exit(1);
+}
+
+// Read MHTML file and extract URL
+const mhtmlContent = fs.readFileSync(mhtmlFilePath, "utf-8");
+const urlMatch = mhtmlContent.match(/Snapshot-Content-Location:\s*(.*)/i);
+const extractedUrl = urlMatch ? urlMatch[1].trim() : null;
+
+if (!extractedUrl) {
+  console.error("Could not extract URL from MHTML file.");
+  process.exit(1);
+}
+
+// Use the directory of the MHTML file with 'app' subdirectory as saveDir
+const saveDir = path.join(path.dirname(mhtmlFilePath), 'app');
 
 const tasks = [
   {
-    url: "https://www.olx.uz/elektronika/tehnika-dlya-doma/prochaya-tehnika-dlya-doma/tashkent/q-%D0%A1%D1%82%D0%B0%D0%B1%D0%B8%D0%BB%D0%B8%D0%B7%D0%B0%D1%82%D0%BE%D1%80/?currency=UYE&search%5Bfilter_enum_state%5D%5B0%5D=new",
-    saveDir: "./- Theory/App",
+    url: extractedUrl,
+    saveDir: saveDir,
   }
 ];
 

@@ -1,1 +1,2 @@
-node one1.js "https://www.olx.uz/d/obyavlenie/stabilizator-andeli-nizkim-tsenam-dostavka-garantiya-ID3QHzk.html" "./ads"
+node D:\FSystem\DEV\Git\js-scraper-olx.uz\saveURLs\saveURL.js "d:\FSystem\ALL\- Theory\BMW - Транспорт - OLX.uz.mhtml" 
+
