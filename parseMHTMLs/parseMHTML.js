@@ -2,9 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
 
-// Load environment variables from .env file
-dotenv.config();
+// Get the directory name of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from .env file in the project root
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 /**
  * Scrapes an ad from a URL and saves it as MHTML
@@ -144,9 +149,19 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
   }
 
   // === CONFIG ===
-  const extensionPath = process.env.EXTENSION_PATH || "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
+  // Use environment variables only (no hardcoded fallbacks)
+  const extensionPath = process.env.EXTENSION_PATH;
+  const profileFilePath = process.env.PROFILE_FILE_PATH;
   
-  const profileFilePath = process.env.PROFILE_FILE_PATH || "D:\\FSystem\\DEV\\Git\\js-scraper-olx.uz\\parseMHTMLs\\1.txt";
+  // Validate that required environment variables are set
+  if (!extensionPath) {
+    throw new Error('EXTENSION_PATH environment variable is required but not set');
+  }
+  
+  if (!profileFilePath) {
+    throw new Error('PROFILE_FILE_PATH environment variable is required but not set');
+  }
+  
   const profileDirs = readProfilesFromFile(profileFilePath);
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
