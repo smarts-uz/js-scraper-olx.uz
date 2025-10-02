@@ -97,10 +97,25 @@ export async function processUrlFiles(inputDir, outputDir) {
   }
   
   // Launch browser
+  const extensionPath = "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
   const browser = await puppeteer.launch({
-    headless: false, // Set to true for production
+    headless: false,
     slowMo: 100,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-background-mode",
+      "--disable-extension-welcome-page",
+      "--autoplay-policy=no-user-gesture-required",
+      "--disable-features=HttpsUpgrades",
+      "--disable-popup-blocking",
+      "--hide-crash-restore-bubble",
+      "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.7204.174 Safari/537.36",
+      "--lang=en-US",
+      "--window-position=0,0",
+      `--disable-extensions-except=${extensionPath}`,
+      `--load-extension=${extensionPath}`
+    ]
   });
   
   console.log("🌐 Browser launched");
@@ -121,5 +136,3 @@ export async function processUrlFiles(inputDir, outputDir) {
   await browser.close();
   console.log("\n🏁 All URLs processed!");
 }
-
-await processUrlFiles("../- Theory/App","../- Theory" );
