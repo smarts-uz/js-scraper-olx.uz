@@ -1,0 +1,1 @@
+node one1.js "https://www.olx.uz/d/obyavlenie/stabilizator-andeli-nizkim-tsenam-dostavka-garantiya-ID3QHzk.html" "./ads"
