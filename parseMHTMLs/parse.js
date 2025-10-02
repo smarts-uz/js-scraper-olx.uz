@@ -82,7 +82,6 @@ async function launchBrowserWithProfile(extensionPath, userDataDir) {
     "--window-position=0,0",
   ];
 
-  // only add extension args if extension exists
   if (extensionPath && fs.existsSync(extensionPath)) {
     args.push(`--disable-extensions-except=${extensionPath}`);
     args.push(`--load-extension=${extensionPath}`);
@@ -107,7 +106,6 @@ function readUrlsFromDirectory(dirPath) {
       const filePath = path.join(dirPath, file);
       const content = fs.readFileSync(filePath, 'utf-8');
 
-      // Extract URL from .url file content
       const urlMatch = content.match(/URL=(.*)/i);
       if (urlMatch && urlMatch[1]) {
         urls.push({
@@ -118,10 +116,12 @@ function readUrlsFromDirectory(dirPath) {
       }
     }
   }
-
   return urls;
 }
 
+/**
+ * Main processing
+ */
 export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
   if (!otherDir) otherDir = path.join(inputDir, "Other");
 
@@ -139,10 +139,8 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     return;
   }
 
-  // === CONFIGURE THESE ===
+  // === CONFIG ===
   const extensionPath = "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\extension\\omghfjlpggmjjaagoclmmobgdodcjboh";
-
-  // Your three profile dirs in priority order:
   const profileDirs = [
     "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\fc42f8a0228a7c8a3d26b24835f9971b",
     "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\fd30c293f724d89f8f1aaead951d17e6",
@@ -151,53 +149,52 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
+  let currentProfileIndex = 0;
+
   for (let i = 0; i < urlObjects.length; i++) {
     const { url, filePath, fileName } = urlObjects[i];
     console.log(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
 
     let success = false;
     let lastSavedPath = null;
+    let attempts = 0;
 
-    // Try each profile in order
-    for (let p = 0; p < profileDirs.length; p++) {
-      const profile = profileDirs[p];
-      console.log(`🔁 Trying profile ${p + 1}/${profileDirs.length}: ${profile}`);
-
-      // Ensure profile dir exists (Chrome will create if not, but warn)
-      if (!fs.existsSync(profile)) {
-        console.warn(`⚠️ Profile dir does not exist: ${profile} (Chrome will create it)`);
-        // optionally create: fs.mkdirSync(profile, { recursive: true });
-      }
+    while (!success && attempts < profileDirs.length) {
+      const profile = profileDirs[currentProfileIndex];
+      console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
       let browser = null;
       try {
         browser = await launchBrowserWithProfile(extensionPath, profile);
-        console.log("🌐 Browser launched");
-
         const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
         lastSavedPath = savedPath;
-
-        // close browser after each attempt to free the profile
-        try { await browser.close(); } catch (e) { /* ignore */ }
+        await browser.close();
 
         if (phoneShown) {
-          console.log(`✅ Phone shown with profile ${profile} — stopping attempts for this URL.`);
+          console.log(`✅ Phone shown with profile ${profile}`);
           success = true;
-          break; // done with this URL
+          // ❗ shu profilda davom etadi
         } else {
-          console.warn(`⚠️ Phone NOT shown with profile ${profile} — will try next profile if any.`);
-          // continue to next profile
+          console.warn(`⚠️ Phone NOT shown with profile ${profile}`);
+          if (currentProfileIndex === profileDirs.length - 1) {
+            console.error("❌ All profiles failed. Stopping process...");
+            process.exit(1);   // ❗ to‘xtatadi
+          }
+          currentProfileIndex++;
         }
       } catch (err) {
-        console.error(`❌ Error while using profile ${profile}: ${err.message}`);
-        if (browser) {
-          try { await browser.close(); } catch (_) {}
+        console.error(`❌ Error with profile ${profile}: ${err.message}`);
+        if (browser) { try { await browser.close(); } catch {} }
+        if (currentProfileIndex === profileDirs.length - 1) {
+          console.error("❌ All profiles failed. Stopping process...");
+          process.exit(1);   // ❗ to‘xtatadi
         }
-        // continue to next profile
+        currentProfileIndex++;
       }
-    } // end profiles loop
 
-    // Move .url file to Other even if failed
+      attempts++;
+    }
+
     try {
       const destinationPath = path.join(otherDir, fileName);
       fs.renameSync(filePath, destinationPath);
@@ -209,9 +206,9 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     if (!success) {
       console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
-      console.log(`🏁 Completed ${url} (saved: ${lastSavedPath})`);
+      console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
     }
-  } // end for each URL
+  }
 
   console.log("\n🏁 All URLs processed!");
 }
