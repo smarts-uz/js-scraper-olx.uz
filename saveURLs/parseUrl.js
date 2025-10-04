@@ -2,17 +2,25 @@ import puppeteer from "puppeteer";
 import { scrapeAd } from './scrapeAd.js';
 import { getPaginationUrls } from './pagination.js';
 import { autoScroll, sleep } from './utils.js';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+console.log(process.cwd(),"cwd");
 
 /**
  * Saves all ads from a search page, including pagination
  */
 export async function scrapeSearch(searchUrl, saveDir, browser = null) {
+
+
   let localBrowser = browser;
   let adsCount = 0;
 
   if (!localBrowser) {
     localBrowser = await puppeteer.launch({
-      headless: true,
+      headless: process.env.HEADLESS_URL === 'true' || process.env.HEADLESS_URL === true ? true : process.env.HEADLESS_URL === 'new' ? 'new' : false,
       slowMo: 100,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
@@ -95,8 +103,10 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
  * Accepts an array of searches and saves all ads
  */
 export async function scrapeMultipleSearches(tasks) {
+  console.log(process.env.HEADLESS_URL,'headlessURL');
+
  const browser = await puppeteer.launch({
-    headless: true,
+    headless: process.env.HEADLESS_URL === 'true' || process.env.HEADLESS_URL === true ? true : process.env.HEADLESS_URL === 'new' ? 'new' : false,
     slowMo: 100,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
