@@ -4,6 +4,22 @@ import puppeteer from 'puppeteer';
 /**
  * Launch Chrome with a specific profile
  */
+function getHeadlessFromEnv() {
+  // Try to read .env file from project root
+  try {
+    const envContent = fs.readFileSync('.env', 'utf8');
+    const match = envContent.match(/^Headless\s*=\s*(.*)$/im);
+    if (match) {
+      const value = match[1].trim().toLowerCase();
+      if (value === 'true') return true;
+      if (value === 'false') return false;
+    }
+  } catch (e) {
+    // ignore, fallback to default
+  }
+  return true; // default to true if not found
+}
+
 export async function launchBrowserWithProfile(extensionPath, userDataDir) {
   const args = [
     "--no-sandbox",
@@ -25,5 +41,7 @@ export async function launchBrowserWithProfile(extensionPath, userDataDir) {
     args.push(`--load-extension=${extensionPath}`);
   }
 
-  return await puppeteer.launch({ headless: false, slowMo: 100, args });
+  const headless = getHeadlessFromEnv();
+
+  return await puppeteer.launch({ headless, slowMo: 100, args });
 }
