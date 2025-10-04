@@ -28,7 +28,7 @@ if (!extractedUrl) {
 }
 
 // Use the directory of the MHTML file with 'app' subdirectory as saveDir
-const saveDir = path.join(path.dirname(mhtmlFilePath), 'app');
+const saveDir = path.join(path.dirname(mhtmlFilePath), 'App');
 
 const tasks = [
   {
