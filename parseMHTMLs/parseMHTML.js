@@ -150,19 +150,55 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
   // === CONFIG ===
   // Use environment variables only (no hardcoded fallbacks)
-  const extensionPath = process.env.EXTENSION_PATH;
-  const profileFilePath = process.env.PROFILE_FILE_PATH;
+  const Folder_Ixbrowser = process.env.Folder_Ixbrowser;
   
-  // Validate that required environment variables are set
-  if (!extensionPath) {
-    throw new Error('EXTENSION_PATH environment variable is required but not set');
+  if (!Folder_Ixbrowser) {
+    throw new Error('Folder_Ixbrowser environment variable is required but not set');
+  }
+
+  const extensionPath = path.join(Folder_Ixbrowser, 'Browser Data/extension');
+  
+  // Check if extension path exists and find valid extensions
+  let extensionPaths = [];
+  if (fs.existsSync(extensionPath)) {
+    const items = fs.readdirSync(extensionPath, { withFileTypes: true });
+    extensionPaths = items
+      .filter(item => item.isDirectory())
+      .map(item => path.join(extensionPath, item.name))
+      .filter(extPath => {
+        const manifestPaths = [
+          path.join(extPath, 'manifest.json'),
+          path.join(extPath, 'manifest')
+        ];
+        return manifestPaths.some(manifestPath => fs.existsSync(manifestPath));
+      });
+    
+    if (extensionPaths.length === 0) {
+      console.warn(`⚠️ Extension path exists but no valid extensions found in: ${extensionPath}`);
+    } else {
+      console.log(`✅ Found ${extensionPaths.length} valid extensions`);
+    }
+  } else {
+    console.warn(`⚠️ Extension path does not exist: ${extensionPath}`);
   }
   
-  if (!profileFilePath) {
-    throw new Error('PROFILE_FILE_PATH environment variable is required but not set');
-  }
+  // Get all directories in Folder_Ixbrowser except "Browser Data/extension"
+  const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
+  console.log("📂 Browser Data directory:", browserDataPath);
   
-  const profileDirs = readProfilesFromFile(profileFilePath);
+  let profileDirs = [];
+  
+  if (fs.existsSync(browserDataPath)) {
+    const items = fs.readdirSync(browserDataPath, { withFileTypes: true });
+    profileDirs = items
+      .filter(item => item.isDirectory() && item.name !== 'extension')
+      .map(item => path.join(browserDataPath, item.name));
+  }
+  profileDirs = [...profileDirs];
+
+  if (profileDirs.length === 0) {
+    throw new Error('No profile directories found');
+  }
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
@@ -182,7 +218,9 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
       let browser = null;
       try {
-        browser = await launchBrowserWithProfile(extensionPath, profile);
+        // Pass extension paths to launch function (use first valid extension or null)
+        const extensionToUse = extensionPaths.length > 0 ? extensionPaths[0] : null;
+        browser = await launchBrowserWithProfile(extensionToUse, profile);
         const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
         lastSavedPath = savedPath;
         await browser.close();
@@ -196,7 +234,7 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
             console.error("❌ All profiles failed. Stopping process...");
             process.exit(1);
           }
-          currentProfileIndex++;
+          currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
         }
       } catch (err) {
         console.error(`❌ Error with profile ${profile}: ${err.message}`);
@@ -205,7 +243,7 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
           console.error("❌ All profiles failed. Stopping process...");
           process.exit(1);
         }
-        currentProfileIndex++;
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
       }
 
       attempts++;
