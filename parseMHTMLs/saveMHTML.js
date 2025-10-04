@@ -6,6 +6,7 @@ import { dirname } from 'path';
 
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Example usage
 async function main() {
   try {
