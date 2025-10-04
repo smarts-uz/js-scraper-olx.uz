@@ -1,4 +1,4 @@
-import { scrapeMultipleSearches } from "./parseUrl.js";
+import { scrapeMultipleSearches } from "./saveURLs/parseUrl.js";
 import fs from "fs";
 import path from "path";
 
