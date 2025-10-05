@@ -1,0 +1,3 @@
+.mhtml
+node.exe;save URL;"d:\Develop\Utilities\Scraper\Projects\olx.uz JS\Sources\js-scraper-olx.uz\saveURL.js" "%1"
+node.exe;save MHTML;"d:\Develop\Utilities\Scraper\Projects\olx.uz JS\Sources\js-scraper-olx.uz\saveMHTML.js" "%1"
