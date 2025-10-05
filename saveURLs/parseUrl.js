@@ -20,7 +20,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
 
   if (!localBrowser) {
     localBrowser = await puppeteer.launch({
-      headless: process.env.HEADLESS_URL === 'true' || process.env.HEADLESS_URL === true ? true : process.env.HEADLESS_URL === 'new' ? 'new' : false,
+      headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
       slowMo: 100,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
@@ -103,10 +103,10 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
  * Accepts an array of searches and saves all ads
  */
 export async function scrapeMultipleSearches(tasks) {
-  console.log(process.env.HEADLESS_URL,'headlessURL');
+  console.log(process.env.HeadlessURL,'headlessURL');
 
  const browser = await puppeteer.launch({
-    headless: process.env.HEADLESS_URL === 'true' || process.env.HEADLESS_URL === true ? true : process.env.HEADLESS_URL === 'new' ? 'new' : false,
+    headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
     slowMo: 100,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
