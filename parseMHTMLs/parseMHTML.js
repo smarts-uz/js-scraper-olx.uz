@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
  * Main processing
  */
 export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
-  if (!otherDir) otherDir = path.join(inputDir, "Other");
+  if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
   console.log(`📂 Reading .url files from: ${inputDir}`);
   console.log(`💾 Saving MHTML files to: ${outputDir}`);
