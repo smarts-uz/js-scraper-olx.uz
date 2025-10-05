@@ -21,6 +21,9 @@ function getHeadlessFromEnv() {
 }
 
 export async function launchBrowserWithProfile(extensionPath, userDataDir) {
+
+
+  
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
