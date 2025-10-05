@@ -1,10 +1,28 @@
 import { scrapeMultipleSearches } from "./saveURLs/parseUrl.js";
 import fs from "fs";
 import path from "path";
+import dotenv from 'dotenv';
 
 // Get command line arguments
 const args = process.argv.slice(2);
 const mhtmlFilePath = args[0];
+
+
+// Get parent path for current file
+const currentFilePath = process.argv[1];
+const currentDir = path.dirname(currentFilePath);
+console.log(currentDir);
+
+
+// Append .env to current path
+const envpath = path.join(currentDir, ".env");
+
+// === Load environment variables ===
+dotenv.config({ path: envpath });
+
+console.log(process.cwd(),"cwd");
+
+
 
 if (!mhtmlFilePath) {
   console.error("Please provide the path to the MHTML file as an argument.");

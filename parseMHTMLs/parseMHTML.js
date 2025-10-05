@@ -10,8 +10,10 @@ import { readUrlsFromDirectory, readProfilesFromFile } from './utils.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables from .env file in the project root
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+
+
+
 
 /**
  * Main processing

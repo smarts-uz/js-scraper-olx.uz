@@ -3,10 +3,28 @@ import { argv } from 'process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import dotenv from 'dotenv';
 
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
+// Get parent path for current file
+const currentFilePath = process.argv[1];
+const currentDir = path.dirname(currentFilePath);
+console.log(currentDir);
+
+
+// Append .env to current path
+const envpath = path.join(currentDir, ".env");
+
+// === Load environment variables ===
+dotenv.config({ path: envpath });
+
+console.log(process.cwd(),"cwd");
+
+
 // Example usage
 async function main() {
   try {

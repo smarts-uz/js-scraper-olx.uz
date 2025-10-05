@@ -2,18 +2,13 @@ import puppeteer from "puppeteer";
 import { scrapeAd } from './scrapeAd.js';
 import { getPaginationUrls } from './pagination.js';
 import { autoScroll, sleep } from './utils.js';
-import dotenv from 'dotenv';
-import path from 'path';
 
-// Load environment variables from .env file
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-console.log(process.cwd(),"cwd");
+
 
 /**
  * Saves all ads from a search page, including pagination
  */
 export async function scrapeSearch(searchUrl, saveDir, browser = null) {
-
 
   let localBrowser = browser;
   let adsCount = 0;
