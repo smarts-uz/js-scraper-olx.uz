@@ -21,7 +21,7 @@ const __dirname = path.dirname(__filename);
  */
 export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     const projectDir = process.cwd();
-    const profileIndexFile = path.join(projectDir, 'current_profile.json');
+    const profileIndexFile = path.join(projectDir, 'profile.json');
    
   if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
@@ -93,7 +93,7 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
-  // Read currentProfileIndex from current_profile.json if it exists, otherwise start from 0
+  // Read currentProfileIndex from profile.json if it exists, otherwise start from 0
   let currentProfileIndex = 0;
   let globalLangIndex = 0;
   if (fs.existsSync(profileIndexFile)) {

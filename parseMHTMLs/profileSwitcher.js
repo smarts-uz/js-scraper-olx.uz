@@ -35,7 +35,7 @@ export async function tryProfilesForUrl(
 
     // Save current profile index to JSON file in project folder
     const projectDir = process.cwd();
-    const profileIndexFile = path.join(projectDir, 'current_profile.json');
+    const profileIndexFile = path.join(projectDir, 'profile.json');
     const profileData = {
       number:currentProfileIndex+1,
       currentProfileIndex: currentProfileIndex,
