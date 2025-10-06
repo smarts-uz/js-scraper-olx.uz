@@ -7,12 +7,10 @@ import dotenv from 'dotenv';
 const args = process.argv.slice(2);
 const mhtmlFilePath = args[0];
 
-
 // Get parent path for current file
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
 console.log(currentDir);
-
 
 // Append .env to current path
 const envpath = path.join(currentDir, ".env");
@@ -20,9 +18,7 @@ const envpath = path.join(currentDir, ".env");
 // === Load environment variables ===
 dotenv.config({ path: envpath });
 
-console.log(process.cwd(),"cwd");
-
-
+console.log(process.cwd(), "cwd");
 
 if (!mhtmlFilePath) {
   console.error("Please provide the path to the MHTML file as an argument.");
@@ -45,8 +41,26 @@ if (!extractedUrl) {
   process.exit(1);
 }
 
-// Use the directory of the MHTML file with 'app' subdirectory as saveDir
-const saveDir = path.join(path.dirname(mhtmlFilePath), 'App');
+// Determine save directory based on the instruction:
+// If the MHTML file is in a folder named 'Theory', create 'App' next to it.
+// Otherwise, create 'App' inside the same directory as the MHTML file.
+const mhtmlDir = path.dirname(mhtmlFilePath);
+const mhtmlParentDir = path.dirname(mhtmlDir);
+const mhtmlFolderName = path.basename(mhtmlDir);
+
+let saveDir;
+if (mhtmlFolderName === '- Theory') {
+  // Place 'App' beside 'Theory'
+  saveDir = path.join(mhtmlParentDir, 'App');
+} else {
+  // Place 'App' inside the same directory as the MHTML file
+  saveDir = path.join(mhtmlDir, 'App');
+}
+
+// Ensure the save directory exists
+if (!fs.existsSync(saveDir)) {
+  fs.mkdirSync(saveDir, { recursive: true });
+}
 
 const tasks = [
   {

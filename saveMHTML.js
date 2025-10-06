@@ -40,13 +40,22 @@ async function main() {
     // Get the directory containing the MHTML file
     const mhtmlDir = path.dirname(fullPath);
     
-    // Set input directory to the 'App' folder next to the MHTML file
-    const inputDir = path.join(mhtmlDir, 'App');
-    
-    // Set output directory to the same folder where the MHTML file is located
-    const outputDir = mhtmlDir;
-   
-    await processUrlFiles(inputDir, outputDir);
+    // Check if the MHTML file is in a "Theory" folder
+    const mhtmlDirName = path.basename(mhtmlDir);
+    if (mhtmlDirName === '- Theory') {
+      // For Theory folder: look for 'App' folder adjacent to (next to) the Theory folder
+      const parentDir = path.dirname(mhtmlDir);
+      const inputDir = path.join(parentDir, 'App');
+      const outputDir = parentDir;
+      console.log(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
+      await processUrlFiles(inputDir, outputDir);
+    } else {
+      // Default behavior: set input directory to the 'App' folder next to the MHTML file
+      const inputDir = path.join(mhtmlDir, 'App');
+      const outputDir = mhtmlDir;
+      console.log(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
+      await processUrlFiles(inputDir, outputDir);
+    }
 
     console.log('All done!');
   } catch (error) {
