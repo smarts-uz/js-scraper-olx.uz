@@ -63,6 +63,15 @@ export async function tryProfilesForUrl(
         console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
         if (currentProfileIndex === profileDirs.length - 1) {
           console.error('❌ All profiles failed. Stopping process...');
+          const profileData = {
+            number:currentProfileIndex+1,
+            currentProfileIndex: currentProfileIndex,
+            profilePath: profileDirs,
+            timestamp: new Date().toISOString(),
+            description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
+          };
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -76,13 +85,20 @@ export async function tryProfilesForUrl(
         } catch {}
       }
       if (currentProfileIndex === profileDirs.length - 1) {
+        const profileData = {
+            number:currentProfileIndex+1,
+            currentProfileIndex: currentProfileIndex,
+            profilePath: profileDirs,
+            timestamp: new Date().toISOString(),
+            description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
+          };
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
         console.error('❌ All profiles failed. Stopping process...');
         process.exit(1);
       }
       currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
       globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
     }
-
     attempts++;
   }
 

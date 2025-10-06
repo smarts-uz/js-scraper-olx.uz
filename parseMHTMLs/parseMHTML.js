@@ -135,15 +135,7 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     }
 
     if (!success) {
-      const profileData = {
-      number:currentProfileIndex+1,
-      currentProfileIndex: currentProfileIndex,
-      profilePath: profileDirs,
-      timestamp: new Date().toISOString(),
-      description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
-    };
-    fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-
+      
       console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
       console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
