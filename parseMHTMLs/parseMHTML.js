@@ -20,6 +20,9 @@ const __dirname = path.dirname(__filename);
  * Main processing
  */
 export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
+    const projectDir = process.cwd();
+    const profileIndexFile = path.join(projectDir, 'current_profile.json');
+   
   if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
   console.log(`📂 Reading .url files from: ${inputDir}`);
@@ -90,8 +93,18 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
+  // Read currentProfileIndex from current_profile.json if it exists, otherwise start from 0
   let currentProfileIndex = 0;
   let globalLangIndex = 0;
+  if (fs.existsSync(profileIndexFile)) {
+    try {
+      const profileData = JSON.parse(fs.readFileSync(profileIndexFile, 'utf8'));
+      currentProfileIndex = profileData.currentProfileIndex || 0;
+      console.log(`🔄 Resuming from profile index: ${currentProfileIndex}`);
+    } catch (err) {
+      console.warn(`⚠️ Failed to read profile index file: ${err.message}`);
+    }
+  }
 
   for (let i = 0; i < urlObjects.length; i++) {
     const { url, filePath, fileName } = urlObjects[i];
@@ -122,6 +135,15 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     }
 
     if (!success) {
+      const profileData = {
+      number:currentProfileIndex+1,
+      currentProfileIndex: currentProfileIndex,
+      profilePath: profileDirs,
+      timestamp: new Date().toISOString(),
+      description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
+    };
+    fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+
       console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
       console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);

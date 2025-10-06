@@ -17,11 +17,6 @@ const chromeLanguages = [
   'ko',    // Korean
   'ar',    // Arabic
 ];
-
-/**
- * Try processing a single URL by cycling through profiles and languages.
- * Returns result along with updated indices for next call.
- */
 export async function tryProfilesForUrl(
   url,
   outputDir,
@@ -37,6 +32,17 @@ export async function tryProfilesForUrl(
   while (!success && attempts < profileDirs.length) {
     const profile = profileDirs[currentProfileIndex];
     console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
+
+    // Save current profile index to JSON file in project folder
+    const projectDir = process.cwd();
+    const profileIndexFile = path.join(projectDir, 'current_profile.json');
+    const profileData = {
+      number:currentProfileIndex+1,
+      currentProfileIndex: currentProfileIndex,
+      profilePath: profile,
+      timestamp: new Date().toISOString()
+    };
+    fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
     let browser = null;
     try {
@@ -82,5 +88,3 @@ export async function tryProfilesForUrl(
 
   return { success, lastSavedPath, currentProfileIndex, globalLangIndex };
 }
-
-
