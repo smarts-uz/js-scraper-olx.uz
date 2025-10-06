@@ -1,29 +1,28 @@
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
 import { launchBrowserWithProfile } from './launchBrowser.js';
+import TelegramBot from 'node-telegram-bot-api';
 
-// Language cycling list (moved from caller)
+dotenv.config();
+
+// === Telegram botni sozlash ===
+const bot = new TelegramBot(`8089149334:AAH1oShdyLtiI30PwTkoZPjUAzMCw2-_JWc`, { polling: true });
+const ADMIN_CHAT_ID = '-4617668494'; // faqat sizga xabar yuboradi
+
 const chromeLanguages = [
-  'fr',    // French
-  'en-US', // English
-  'ru',    // Russian
-  'tr',    // Turkish
-  'de',    // German
-  'es',    // Spanish
-  'it',    // Italian
-  'ja',    // Japanese
-  'zh-CN', // Chinese (Simplified)
-  'ko',    // Korean
-  'ar',    // Arabic
+  'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
 ];
+
 export async function tryProfilesForUrl(
   url,
   outputDir,
   profileDirs,
   extensionPaths,
   currentProfileIndex,
-  globalLangIndex
+  globalLangIndex,
+  currentSavedCount
 ) {
   let success = false;
   let lastSavedPath = null;
@@ -33,15 +32,15 @@ export async function tryProfilesForUrl(
     const profile = profileDirs[currentProfileIndex];
     console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
-    // Save current profile index to JSON file in project folder
     const projectDir = process.cwd();
     const profileIndexFile = path.join(projectDir, 'profile.json');
     const profileData = {
-      number:currentProfileIndex+1,
-      currentProfileIndex: currentProfileIndex,
+      number: currentProfileIndex + 1,
+      currentProfileIndex,
       profilePath: profile,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
+
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
     let browser = null;
@@ -61,17 +60,13 @@ export async function tryProfilesForUrl(
         success = true;
       } else {
         console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
+        await bot.sendMessage(ADMIN_CHAT_ID, `${currentSavedCount} saved in this profile: ${profile}  for ${url}`);
+
         if (currentProfileIndex === profileDirs.length - 1) {
           console.error('❌ All profiles failed. Stopping process...');
-          const profileData = {
-            number:currentProfileIndex+1,
-            currentProfileIndex: currentProfileIndex,
-            profilePath: profileDirs,
-            timestamp: new Date().toISOString(),
-            description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
-          };
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-
+          await bot.sendMessage(ADMIN_CHAT_ID, `❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -85,15 +80,9 @@ export async function tryProfilesForUrl(
         } catch {}
       }
       if (currentProfileIndex === profileDirs.length - 1) {
-        const profileData = {
-            number:currentProfileIndex+1,
-            currentProfileIndex: currentProfileIndex,
-            profilePath: profileDirs,
-            timestamp: new Date().toISOString(),
-            description: `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`
-          };
-          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-        console.error('❌ All profiles failed. Stopping process...');
+        profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+        fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+        await bot.sendMessage(ADMIN_CHAT_ID, `❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
         process.exit(1);
       }
       currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;

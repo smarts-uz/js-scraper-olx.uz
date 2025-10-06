@@ -1,10 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { scrapeAd } from './scrapeAd.js';
-import { launchBrowserWithProfile } from './launchBrowser.js';
-import { readUrlsFromDirectory, readProfilesFromFile } from './utils.js';
+import { readUrlsFromDirectory } from './utils.js';
 import { tryProfilesForUrl } from './profileSwitcher.js';
 
 // Get the directory name of the current module
@@ -121,7 +118,8 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
       profileDirs,
       extensionPaths,
       currentProfileIndex,
-      globalLangIndex
+      globalLangIndex,
+      i
     );
     currentProfileIndex = newProfileIndex;
     globalLangIndex = newGlobalLangIndex;
