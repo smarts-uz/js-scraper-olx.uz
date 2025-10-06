@@ -2,6 +2,7 @@ import { processUrlFiles } from './parseMHTMLs/parseMHTML.js';
 import { argv } from 'process';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
 
@@ -9,12 +10,20 @@ import dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 // Get parent path for current file
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
 console.log(currentDir);
 
+function showMessageBox(message, title = "Error") {
+  try {
+    // escape quotes
+    const safeMsg = message.replace(/"/g, "'");
+    execSync(`msg * "${title}: ${safeMsg}"`);
+  } catch (err) {
+    console.error("⚠️ Failed to show message box:", err.message);
+  }
+}
 
 // Append .env to current path
 const envpath = path.join(currentDir, ".env");
@@ -22,8 +31,7 @@ const envpath = path.join(currentDir, ".env");
 // === Load environment variables ===
 dotenv.config({ path: envpath });
 
-console.log(process.cwd(),"cwd");
-
+console.log(process.cwd(), "cwd");
 
 // Example usage
 async function main() {
@@ -36,10 +44,10 @@ async function main() {
 
     // Resolve the full path of the MHTML file
     const fullPath = path.resolve(mhtmlFilePath);
-    
+
     // Get the directory containing the MHTML file
     const mhtmlDir = path.dirname(fullPath);
-    
+
     // Check if the MHTML file is in a "Theory" folder
     const mhtmlDirName = path.basename(mhtmlDir);
     if (mhtmlDirName === '- Theory') {
@@ -58,6 +66,7 @@ async function main() {
     }
 
     console.log('All done!');
+    showMessageBox(`All completed for ${fullPath}`, "Completed");
   } catch (error) {
     console.error('Error:', error);
   }

@@ -2,6 +2,17 @@ import { scrapeMultipleSearches } from "./saveURLs/parseUrl.js";
 import fs from "fs";
 import path from "path";
 import dotenv from 'dotenv';
+import { execSync } from 'child_process';
+
+function showMessageBox(message, title = "Error") {
+  try {
+    // escape quotes
+    const safeMsg = message.replace(/"/g, "'");
+    execSync(`msg * "${title}: ${safeMsg}"`);
+  } catch (err) {
+    console.error("⚠️ Failed to show message box:", err.message);
+  }
+}
 
 // Get command line arguments
 const args = process.argv.slice(2);
@@ -70,5 +81,10 @@ const tasks = [
 ];
 
 (async () => {
-  await scrapeMultipleSearches(tasks);
+  try {
+    await scrapeMultipleSearches(tasks);
+    showMessageBox(`All URLs downloaded for ${mhtmlFilePath}`, "Completed");
+  } catch (err) {
+    console.error("❌ Error during scraping:", err);
+  }
 })();
