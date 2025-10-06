@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { scrapeAd } from './scrapeAd.js';
 import { launchBrowserWithProfile } from './launchBrowser.js';
 import { readUrlsFromDirectory, readProfilesFromFile } from './utils.js';
+import { tryProfilesForUrl } from './profileSwitcher.js';
 
 // Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -90,51 +91,27 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
   let currentProfileIndex = 0;
+  let globalLangIndex = 0;
 
   for (let i = 0; i < urlObjects.length; i++) {
     const { url, filePath, fileName } = urlObjects[i];
     console.log(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
 
-    let success = false;
-    let lastSavedPath = null;
-    let attempts = 0;
-
-    while (!success && attempts < profileDirs.length) {
-      const profile = profileDirs[currentProfileIndex];
-      console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
-
-      let browser = null;
-      try {
-        // Pass extension paths to launch function (use first valid extension or null)
-        const extensionToUse = extensionPaths.length > 0 ? extensionPaths[0] : null;
-        browser = await launchBrowserWithProfile(extensionToUse, profile);
-        const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
-        lastSavedPath = savedPath;
-        await browser.close();
-
-        if (phoneShown) {
-          console.log(`✅ Phone shown with profile ${profile}`);
-          success = true;
-        } else {
-          console.warn(`⚠️ Phone NOT shown with profile ${profile}`);
-          if (currentProfileIndex === profileDirs.length - 1) {
-            console.error("❌ All profiles failed. Stopping process...");
-            process.exit(1);
-          }
-          currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
-        }
-      } catch (err) {
-        console.error(`❌ Error with profile ${profile}: ${err.message}`);
-        if (browser) { try { await browser.close(); } catch {} }
-        if (currentProfileIndex === profileDirs.length - 1) {
-          console.error("❌ All profiles failed. Stopping process...");
-          process.exit(1);
-        }
-        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
-      }
-
-      attempts++;
-    }
+    const {
+      success,
+      lastSavedPath,
+      currentProfileIndex: newProfileIndex,
+      globalLangIndex: newGlobalLangIndex,
+    } = await tryProfilesForUrl(
+      url,
+      outputDir,
+      profileDirs,
+      extensionPaths,
+      currentProfileIndex,
+      globalLangIndex
+    );
+    currentProfileIndex = newProfileIndex;
+    globalLangIndex = newGlobalLangIndex;
 
     try {
       const destinationPath = path.join(otherDir, fileName);

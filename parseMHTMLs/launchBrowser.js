@@ -20,10 +20,7 @@ function getHeadlessFromEnv() {
   return true; // default to true if not found
 }
 
-export async function launchBrowserWithProfile(extensionPath, userDataDir) {
-
-
-  
+export async function launchBrowserWithProfile(extensionPath, userDataDir, lang) {
   const args = [
     "--no-sandbox",
     "--disable-setuid-sandbox",
@@ -35,7 +32,7 @@ export async function launchBrowserWithProfile(extensionPath, userDataDir) {
     "--hide-crash-restore-bubble",
     `--user-data-dir=${userDataDir}`,
     "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.7204.174 Safari/537.36",
-    "--lang=en-US",
+    `--lang=${lang}`,
     "--window-position=0,0",
   ];
 
