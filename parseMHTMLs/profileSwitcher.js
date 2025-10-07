@@ -3,9 +3,11 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
 import { launchBrowserWithProfile } from './launchBrowser.js';
+import { ChromeRunner } from '../ALL/ChromeRunner.js';
 import {sendTelegramMessage} from '../utils.js';
 dotenv.config();
 
+const runner = new ChromeRunner();
 const chromeLanguages = [
   'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
 ];
@@ -45,7 +47,8 @@ export async function tryProfilesForUrl(
       fs.writeFileSync(langFile, String(globalLangIndex % chromeLanguages.length));
 
       const extensionToUse = extensionPaths.length > 0 ? extensionPaths[0] : null;
-      browser = await launchBrowserWithProfile(extensionToUse, profile, lang);
+      // browser = await launchBrowserWithProfile(extensionToUse, profile, lang);
+        browser = await runner.run(profile,lang);
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
       lastSavedPath = savedPath;
       await browser.close();

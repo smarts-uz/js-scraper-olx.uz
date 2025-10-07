@@ -6,11 +6,11 @@ import { dirname } from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
+import puppeteer from 'puppeteer-core'; // 🔥 Qo‘shiladi
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-const envpath = path.join(__dirname,"..", ".env");
+const envpath = path.join(__dirname, "..", ".env");
 
 dotenv.config({ path: envpath });
 
@@ -23,9 +23,10 @@ export class ChromeRunner {
     this.win = path.win32;
   }
 
-  async run(rawPath,lang) {
+  async run(rawPath, lang, port = 9222) {
     if (!rawPath) throw new Error('❗ rawPath argumenti kerak (user data dir yo‘li)');
     if (!lang) throw new Error('❗ lang argumenti kerak (lang)');
+
     const normalized = this.win.normalize(rawPath);
     const segments = normalized.split(this.win.sep).filter(Boolean);
     const lowerSegments = segments.map(s => s.toLowerCase());
@@ -55,6 +56,7 @@ export class ChromeRunner {
 
     const args = [
       `--user-data-dir=${normalized}`,
+      `--remote-debugging-port=${port}`, // 🔥 Muhim
       '--no-default-browser-check',
       '--no-first-run',
       '--window-position=0,0',
@@ -87,9 +89,36 @@ export class ChromeRunner {
     console.log('📁 Chrome:', chromeExePath);
     console.log('📁 Extensions:', extensions.length);
 
-    const child = spawn(chromeExePath, args, { detached: true, stdio: 'ignore' });
-    child.unref();
+    // 🔹 1. Chrome ishga tushadi
+    const child = spawn(chromeExePath, args, {  stdio: 'inherit' });
 
-    console.log('✅ Chrome ishga tushirildi (detached).');
+    console.log('✅ Chrome ishga tushirildi (detached). Ulanish uchun kutilyapti...');
+
+    // 🔹 2. Chrome endpoint ochilishini kutamiz
+    const endpoint = `http://127.0.0.1:${port}/json/version`;
+
+    let browserWSEndpoint = null;
+    for (let i = 0; i < 20; i++) {
+      try {
+        const res = await fetch(endpoint);
+        if (res.ok) {
+          const data = await res.json();
+          browserWSEndpoint = data.webSocketDebuggerUrl;
+          break;
+        }
+      } catch {
+        await new Promise(r => setTimeout(r, 500)); // 0.5s kutish
+      }
+    }
+
+    if (!browserWSEndpoint) {
+      throw new Error('❌ Chrome bilan ulanib bo‘lmadi (devtools endpoint topilmadi)');
+    }
+
+    // 🔹 3. Puppeteer orqali ulanamiz
+    const browser = await puppeteer.connect({ browserWSEndpoint });
+    console.log('✅ Puppeteer Chrome bilan ulanib oldi.');
+
+    return browser; // 🔥 endi browser instance qaytadi
   }
 }

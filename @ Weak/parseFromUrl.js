@@ -80,14 +80,6 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
   let localBrowser = browser;
   let adsCount = 0;
 
-  if (!localBrowser) {
-    localBrowser = await puppeteer.launch({
-      headless: false,
-      slowMo: 100,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-  }
-
   const page = await localBrowser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
 
