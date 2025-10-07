@@ -9,22 +9,13 @@ import path from "path";
 function findRelevantDirectories(rootDir) {
   const dirs = [];
   
-  // Check main directory (where App would be created)
-  const mainDir = path.join(rootDir, 'App');
-  if (fs.existsSync(mainDir)) {
-    dirs.push(mainDir);
-  }
+  // Check main directory and subdirectories
+  const checkDirs = [rootDir, path.join(rootDir, '@ Weak'), path.join(rootDir, '@ Other')];
   
-  // Check @ Weak directory
-  const weakDir = path.join(rootDir, '@ Weak');
-  if (fs.existsSync(weakDir)) {
-    dirs.push(weakDir);
-  }
-  
-  // Check @ Other directory
-  const otherDir = path.join(rootDir, '@ Other');
-  if (fs.existsSync(otherDir)) {
-    dirs.push(otherDir);
+  for (const dir of checkDirs) {
+    if (fs.existsSync(dir)) {
+      dirs.push(dir);
+    }
   }
   
   return dirs;
@@ -37,9 +28,7 @@ function findRelevantDirectories(rootDir) {
  * @returns {boolean} - True if URL exists, false otherwise
  */
 function urlExistsInDirectories(url, currentSaveDir) {
-  const rootDir = path.resolve('.');
-  const directories = findRelevantDirectories(rootDir);
-  
+  const directories = findRelevantDirectories(currentSaveDir);
   // Check each directory
   for (const dir of directories) {
     // Skip the current save directory
@@ -55,7 +44,6 @@ function urlExistsInDirectories(url, currentSaveDir) {
               const content = fs.readFileSync(filePath, 'utf8');
               // Check for exact URL match
               if (content.includes(`URL=${url}`)) {
-                console.log(`⚠️  URL already exists in: ${filePath}`);
                 return true;
               }
             } catch (err) {
@@ -78,7 +66,7 @@ function urlExistsInDirectories(url, currentSaveDir) {
 export async function scrapeAd(url, saveDir, browser) {
   // Check if URL already exists in any relevant directory
   if (urlExistsInDirectories(url, saveDir)) {
-    console.log(`⏭️  Skipping duplicate URL: ${url}`);
+    console.log(`⏭️  URL already exists, skipping: ${url}`);
     return;
   }
 
@@ -94,7 +82,6 @@ URL=${url}`;
 
   // Check if file already exists in the current directory
   if (fs.existsSync(filePath)) {
-    console.log(`⏭️  File already exists, skipping: ${filePath}`);
     return;
   }
 

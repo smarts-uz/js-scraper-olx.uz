@@ -12,15 +12,6 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
 
   let localBrowser = browser;
   let adsCount = 0;
-
-  if (!localBrowser) {
-    localBrowser = await puppeteer.launch({
-      headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
-      slowMo: 100,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-  }
-
   // Получаем все страницы пагинации
   const mainPage = await localBrowser.newPage();
   await mainPage.setViewport({ width: 1280, height: 900 });
@@ -100,7 +91,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
 export async function scrapeMultipleSearches(tasks) {
   console.log(process.env.HeadlessURL,'headlessURL');
 
- const browser = await puppeteer.launch({
+ const browser = await puppeteer.launch({ //komol
     headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
     slowMo: 100,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],

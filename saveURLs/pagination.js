@@ -1,8 +1,5 @@
 import { sleep } from './utils.js';
 
-/**
- * Gets all pagination page links
- */
 export async function getPaginationUrls(page) {
   try {
     // Wait for pagination elements to load
@@ -71,7 +68,6 @@ export async function getPaginationUrls(page) {
     if (maxPageNumber > 0) {
       const currentUrl = page.url();
       const urlObj = new URL(currentUrl);
-      const baseUrl = `${urlObj.origin}${urlObj.pathname}`;
       
       // Generate URLs for all pages from 2 to maxPageNumber
       for (let i = 2; i <= maxPageNumber; i++) {
