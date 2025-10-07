@@ -10,6 +10,6 @@ const profileData = JSON.parse(readFileSync(profileIndexFile, 'utf8'));
 const rawPath = profileData.profilePath;
 
 const runner = new ChromeRunner();
-runner.run(rawPath)
+runner.run(rawPath,profileData.lang)
   .then(() => console.log(""))
   .catch(err => console.error("❌ Xatolik:", err.message));

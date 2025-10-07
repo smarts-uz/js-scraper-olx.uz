@@ -17,15 +17,15 @@ dotenv.config({ path: envpath });
 export class ChromeRunner {
   constructor(chromeVersion = process.env.CHROME_VERSION) {
     if (!chromeVersion) {
-      throw new Error('❌ CHROME_VERSION belgilanmagan (env yoki constructor orqali).');
+      throw new Error('❌ CHROME_VERSION belgilanmagan (env orqali).');
     }
     this.chromeVersion = chromeVersion;
     this.win = path.win32;
   }
 
-  async run(rawPath) {
+  async run(rawPath,lang) {
     if (!rawPath) throw new Error('❗ rawPath argumenti kerak (user data dir yo‘li)');
-
+    if (!lang) throw new Error('❗ lang argumenti kerak (lang)');
     const normalized = this.win.normalize(rawPath);
     const segments = normalized.split(this.win.sep).filter(Boolean);
     const lowerSegments = segments.map(s => s.toLowerCase());
@@ -62,7 +62,7 @@ export class ChromeRunner {
       '--disable-popup-blocking',
       '--hide-crash-restore-bubble',
       '--disable-setuid-sandbox',
-      '--lang=en-US',
+      `--lang=${lang}`,
       '--force-color-profile=srgb',
       '--metrics-recording-only',
       '--password-store=basic',
