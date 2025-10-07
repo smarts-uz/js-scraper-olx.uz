@@ -3,13 +3,8 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
 import { launchBrowserWithProfile } from './launchBrowser.js';
-import TelegramBot from 'node-telegram-bot-api';
-
+import {sendTelegramMessage} from '../utils.js';
 dotenv.config();
-
-// === Telegram botni sozlash ===
-const bot = new TelegramBot(`8089149334:AAH1oShdyLtiI30PwTkoZPjUAzMCw2-_JWc`, { polling: true });
-const ADMIN_CHAT_ID = '-4617668494'; // faqat sizga xabar yuboradi
 
 const chromeLanguages = [
   'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
@@ -60,13 +55,13 @@ export async function tryProfilesForUrl(
         success = true;
       } else {
         console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
-        await bot.sendMessage(ADMIN_CHAT_ID, `${currentSavedCount} saved in this profile: ${profile}  for ${url}`);
+        await sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
 
         if (currentProfileIndex === profileDirs.length - 1) {
           console.error('❌ All profiles failed. Stopping process...');
           profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-          await bot.sendMessage(ADMIN_CHAT_ID, `❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -82,7 +77,7 @@ export async function tryProfilesForUrl(
       if (currentProfileIndex === profileDirs.length - 1) {
         profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
         fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-        await bot.sendMessage(ADMIN_CHAT_ID, `❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+        await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
         process.exit(1);
       }
       currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;

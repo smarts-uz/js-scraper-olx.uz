@@ -137,8 +137,10 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
       console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
       console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
+      await sendTelegramMessage(`${i} saved`);
     }
   }
 
   console.log("\n🏁 All URLs processed!");
+  process.exit(0);
 }

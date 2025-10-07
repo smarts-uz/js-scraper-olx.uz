@@ -67,7 +67,11 @@ async function main() {
 
     console.log('All done!');
     showMessageBox(`All completed for ${fullPath}`, "Completed");
-  } catch (error) {
+     // Wait for 2 seconds before exiting to ensure all operations are completed
+     setTimeout(() => {
+       process.exit(0);
+     }, 2000);
+    } catch (error) {
     console.error('Error:', error);
   }
 }
