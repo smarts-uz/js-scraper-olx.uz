@@ -118,7 +118,6 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     );
     currentProfileIndex = newProfileIndex;
     globalLangIndex = newGlobalLangIndex;
-
     try {
       const destinationPath = path.join(otherDir, fileName);
       fs.renameSync(filePath, destinationPath);
@@ -132,7 +131,6 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
       console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
       console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
-      await sendTelegramMessage(`${i} saved`);
     }
   }
 

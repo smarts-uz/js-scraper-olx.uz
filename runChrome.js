@@ -9,6 +9,4 @@ if (!rawPath) {
 }
 
 const runner = new ChromeRunner(); // CHROME_VERSION avtomatik .env dan olinadi
-runner.run(rawPath)
-  .then(() => console.log("✅ Chrome muvaffaqiyatli ishga tushdi"))
-  .catch(err => console.error("❌ Xatolik:", err.message));
+runner.run(rawPath,'fa_IR');
