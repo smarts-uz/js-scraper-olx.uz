@@ -13,7 +13,6 @@ const __dirname = path.dirname(__filename);
 // Get parent path for current file
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
-console.log(currentDir);
 
 function showMessageBox(message, title = "Error") {
   try {
