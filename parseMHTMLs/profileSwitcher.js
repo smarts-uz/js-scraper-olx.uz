@@ -16,7 +16,6 @@ export async function tryProfilesForUrl(
   url,
   outputDir,
   profileDirs,
-  extensionPaths,
   currentProfileIndex,
   globalLangIndex,
   currentSavedCount
@@ -31,22 +30,21 @@ export async function tryProfilesForUrl(
 
     const projectDir = process.cwd();
     const profileIndexFile = path.join(projectDir, 'profile.json');
-    const profileData = {
+    
+    let browser = null;
+    try {
+      const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
+    
+        const profileData = {
       number: currentProfileIndex + 1,
       currentProfileIndex,
       profilePath: profile,
       timestamp: new Date().toISOString(),
+      lang:lang
     };
 
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-    let browser = null;
-    try {
-      const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
-      const langFile = path.join(profile, 'last_lang.txt');
-      fs.writeFileSync(langFile, String(globalLangIndex % chromeLanguages.length));
-
-      const extensionToUse = extensionPaths.length > 0 ? extensionPaths[0] : null;
       // browser = await launchBrowserWithProfile(extensionToUse, profile, lang);
         browser = await runner.run(profile,lang);
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
@@ -72,19 +70,45 @@ export async function tryProfilesForUrl(
       }
     } catch (err) {
       console.error(`❌ Error with profile ${profile}: ${err.message}`);
+      // Check if this is a recoverable error
+      const isRecoverableError = err.message.includes('Target closed') || 
+                                err.message.includes('Protocol error') || 
+                                err.message.includes('Navigation failed') ||
+                                err.message.includes('net::ERR_');
+      
       if (browser) {
         try {
           await browser.close();
-        } catch {}
+        } catch (closeErr) {
+          console.warn(`⚠️ Error closing browser: ${closeErr.message}`);
+        }
       }
-      if (currentProfileIndex === profileDirs.length - 1) {
-        profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
-        fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-        await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
-        process.exit(1);
+      
+      // If it's a recoverable error, try the next profile
+      if (isRecoverableError) {
+        console.log(`🔄 Recoverable error detected. Trying next profile...`);
+        // Add a small delay to allow Chrome to fully close
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (currentProfileIndex === profileDirs.length - 1) {
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          process.exit(1);
+        }
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
+        globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
+      } else {
+        // For non-recoverable errors, exit
+        if (currentProfileIndex === profileDirs.length - 1) {
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          process.exit(1);
+        }
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
+        globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
       }
-      currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
-      globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
     }
     attempts++;
   }

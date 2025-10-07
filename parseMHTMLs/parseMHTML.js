@@ -39,31 +39,6 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     throw new Error('Folder_Ixbrowser environment variable is required but not set');
   }
 
-  const extensionPath = path.join(Folder_Ixbrowser, 'Browser Data/extension');
-  
-  // Check if extension path exists and find valid extensions
-  let extensionPaths = [];
-  if (fs.existsSync(extensionPath)) {
-    const items = fs.readdirSync(extensionPath, { withFileTypes: true });
-    extensionPaths = items
-      .filter(item => item.isDirectory())
-      .map(item => path.join(extensionPath, item.name))
-      .filter(extPath => {
-        const manifestPaths = [
-          path.join(extPath, 'manifest.json'),
-          path.join(extPath, 'manifest')
-        ];
-        return manifestPaths.some(manifestPath => fs.existsSync(manifestPath));
-      });
-    
-    if (extensionPaths.length === 0) {
-      console.warn(`⚠️ Extension path exists but no valid extensions found in: ${extensionPath}`);
-    } else {
-      console.log(`✅ Found ${extensionPaths.length} valid extensions`);
-    }
-  } else {
-    console.warn(`⚠️ Extension path does not exist: ${extensionPath}`);
-  }
   
   // Get all directories in Folder_Ixbrowser except "Browser Data/extension"
   const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
@@ -111,7 +86,6 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
       url,
       outputDir,
       profileDirs,
-      extensionPaths,
       currentProfileIndex,
       globalLangIndex,
       i

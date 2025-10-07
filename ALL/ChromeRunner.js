@@ -1,18 +1,17 @@
-// ChromeRunner.js
-import { spawn } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import puppeteer from 'puppeteer-core'; // 🔥 Qo‘shiladi
+import puppeteer from 'puppeteer-core';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const envpath = path.join(__dirname, "..", ".env");
 
 dotenv.config({ path: envpath });
+const headlessENV = process.env.Headless?.toLowerCase() === 'true';
 
 export class ChromeRunner {
   constructor(chromeVersion = process.env.CHROME_VERSION) {
@@ -49,76 +48,67 @@ export class ChromeRunner {
     let extensions = [];
     try {
       const extDirs = await fs.readdir(extensionBase, { withFileTypes: true });
-      extensions = extDirs.filter(d => d.isDirectory()).map(d => this.win.join(extensionBase, d.name));
+      extensions = extDirs
+        .filter(d => d.isDirectory())
+        .map(d => this.win.join(extensionBase, d.name));
     } catch {
       console.warn('⚠️ Extension papkasi topilmadi yoki bo‘sh:', extensionBase);
     }
-
-    const args = [
-      `--user-data-dir=${normalized}`,
-      `--remote-debugging-port=${port}`, // 🔥 Muhim
-      '--no-default-browser-check',
-      '--no-first-run',
-      '--window-position=0,0',
-      '--autoplay-policy=no-user-gesture-required',
-      '--disable-popup-blocking',
-      '--hide-crash-restore-bubble',
-      '--disable-setuid-sandbox',
-      `--lang=${lang}`,
-      '--force-color-profile=srgb',
-      '--metrics-recording-only',
-      '--password-store=basic',
-      '--use-mock-keychain',
-      '--disable-background-mode',
-      '--disable-extension-welcome-page',
-      '--protected-enablechromeversion=1',
-      '--enable-unsafe-swiftshader',
-      '--disable-features=HttpsUpgrades,HttpsFirstModeV2ForEngagedSites,HttpsFirstBalancedMode,HttpsFirstBalancedModeAutoEnable,EnableFingerprintingProtectionFilter,FlashDeprecationWarning,EnablePasswordsAccountStorage,RendererCodeIntegrity,CanvasNoise',
-      '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.7258.94 Safari/537.36',
-      '--no-sandbox'
-    ];
-
-    if (extensions.length > 0) args.push(`--load-extension=${extensions.join(',')}`);
 
     if (!existsSync(chromeExePath)) {
       throw new Error(`❌ chrome.exe topilmadi: ${chromeExePath}`);
     }
 
-    console.log('🚀 Chrome ishga tushirilmoqda...');
-    console.log('📁 user-data-dir:', normalized);
-    console.log('📁 Chrome:', chromeExePath);
-    console.log('📁 Extensions:', extensions.length);
+    const args = [
+      `--user-data-dir=${normalized}`,
+      `--remote-debugging-port=${port}`,
+      '--no-default-browser-check',
+      '--no-first-run',
+      '--window-position=0,0',
+      '--disable-popup-blocking',
+      '--hide-crash-restore-bubble',
+      '--disable-setuid-sandbox',
+      `--lang=${lang}`,
+      '--force-color-profile=srgb',
+      '--disable-background-mode',
+      '--no-sandbox',
+      '--disable-features=RendererCodeIntegrity,CanvasNoise,FlashDeprecationWarning',
+    ];
 
-    // 🔹 1. Chrome ishga tushadi
-    const child = spawn(chromeExePath, args, {  stdio: 'inherit' });
-
-    console.log('✅ Chrome ishga tushirildi (detached). Ulanish uchun kutilyapti...');
-
-    // 🔹 2. Chrome endpoint ochilishini kutamiz
-    const endpoint = `http://127.0.0.1:${port}/json/version`;
-
-    let browserWSEndpoint = null;
-    for (let i = 0; i < 20; i++) {
-      try {
-        const res = await fetch(endpoint);
-        if (res.ok) {
-          const data = await res.json();
-          browserWSEndpoint = data.webSocketDebuggerUrl;
-          break;
-        }
-      } catch {
-        await new Promise(r => setTimeout(r, 500)); // 0.5s kutish
-      }
+    if (extensions.length > 0) {
+      args.push(
+        `--disable-extensions-except=${extensions.join(',')}`,
+        `--load-extension=${extensions.join(',')}`
+      );
     }
 
-    if (!browserWSEndpoint) {
-      throw new Error('❌ Chrome bilan ulanib bo‘lmadi (devtools endpoint topilmadi)');
+    // console.log('🚀 Chrome (puppeteer orqali) ishga tushirilmoqda...');
+    // console.log('📁 User-data-dir:', normalized);
+    // console.log('📁 Extensions:', extensions.length);
+    // console.log('📁 Headless:', headlessENV);
+
+    let browser;
+    try {
+      browser = await puppeteer.launch({
+        executablePath: chromeExePath,
+        headless: false, // ⚠️ extensionlar faqat headless=false da ishlaydi
+        defaultViewport: { width: 800, height: 600 },
+        args,
+      });
+
+      console.log('✅ Puppeteer orqali Chrome ishga tushdi.');
+    } catch (err) {
+      console.error('❌ Puppeteer.launch() xatosi:', err.message);
+      throw err;
     }
 
-    // 🔹 3. Puppeteer orqali ulanamiz
-    const browser = await puppeteer.connect({ browserWSEndpoint });
-    console.log('✅ Puppeteer Chrome bilan ulanib oldi.');
+    // Extension sahifasi avtomatik ochilmasligi uchun
+    const pages = await browser.pages();
+    if (pages.length > 0) await pages[0].goto('about:blank');
 
-    return browser; // 🔥 endi browser instance qaytadi
+    browser.on('disconnected', () => {
+    });
+
+    return browser;
   }
 }
