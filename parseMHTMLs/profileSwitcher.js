@@ -3,10 +3,11 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
 import { ChromeRunner } from '../ALL/ChromeRunner.js';
-import {sendTelegramMessage} from '../utils.js';
+import { Utils } from '../ALL/Utils.js';
 dotenv.config();
 
 const runner = new ChromeRunner();
+const utils = new Utils();
 const chromeLanguages = [
   'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
 ];
@@ -34,7 +35,7 @@ export async function tryProfilesForUrl(
     try {
       const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
     
-        const profileData = {
+    const profileData = {
       number: currentProfileIndex + 1,
       currentProfileIndex,
       profilePath: profile,
@@ -54,13 +55,13 @@ export async function tryProfilesForUrl(
         success = true;
       } else {
         console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
-        await sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
+        await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
 
         if (currentProfileIndex === profileDirs.length - 1) {
           console.error('❌ All profiles failed. Stopping process...');
           profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -91,7 +92,7 @@ export async function tryProfilesForUrl(
         if (currentProfileIndex === profileDirs.length - 1) {
           profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -101,7 +102,7 @@ export async function tryProfilesForUrl(
         if (currentProfileIndex === profileDirs.length - 1) {
           profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-          await sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
           process.exit(1);
         }
         currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;

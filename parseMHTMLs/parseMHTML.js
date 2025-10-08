@@ -1,21 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { readUrlsFromDirectory } from './utils.js';
 import { tryProfilesForUrl } from './profileSwitcher.js';
+import { fileURLToPath } from 'url';
 
-// Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Main processing
- */
+
 export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     const projectDir = process.cwd();
     const profileIndexFile = path.join(projectDir, 'profile.json');
+    const Folder_Ixbrowser = process.env.Folder_Ixbrowser;
    
-  if (!otherDir) otherDir = path.join(inputDir, "@ Other");
+    if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
   console.log(`📂 Reading .url files from: ${inputDir}`);
   console.log(`💾 Saving MHTML files to: ${outputDir}`);
@@ -31,16 +29,12 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
     return;
   }
 
-  // === CONFIG ===
-  // Use environment variables only (no hardcoded fallbacks)
-  const Folder_Ixbrowser = process.env.Folder_Ixbrowser;
   
   if (!Folder_Ixbrowser) {
     throw new Error('Folder_Ixbrowser environment variable is required but not set');
   }
 
   
-  // Get all directories in Folder_Ixbrowser except "Browser Data/extension"
   const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
   console.log("📂 Browser Data directory:", browserDataPath);
   
@@ -60,7 +54,6 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
 
   console.log("🌐 Starting processing with profiles:", profileDirs);
 
-  // Read currentProfileIndex from profile.json if it exists, otherwise start from 0
   let currentProfileIndex = 0;
   let globalLangIndex = 0;
   if (fs.existsSync(profileIndexFile)) {

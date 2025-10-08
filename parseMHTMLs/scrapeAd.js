@@ -2,22 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Get the directory name of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const Wait_Min = process.env.Wait_Min || 5;
 const Wait_Max = process.env.Wait_Max || 30;
-// Add Scroll_Min and Scroll_Max environment variables
-const Scroll_Min = process.env.Scroll_Min || 100;
-const Scroll_Max = process.env.Scroll_Max || 500;
 // Add Scroll_Count_Min and Scroll_Count_Max for number of scrolls
 const Scroll_Count_Min = process.env.Scroll_Count_Min || 2;
 const Scroll_Count_Max = process.env.Scroll_Count_Max || 5;
 
-/**
- * Generates a random integer between min and max (inclusive)
- */
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }

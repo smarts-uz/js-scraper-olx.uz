@@ -1,9 +1,8 @@
 import { processUrlFiles } from './parseMHTMLs/parseMHTML.js';
+import { Utils } from './ALL/Utils.js';
 import { argv } from 'process';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import { dirname } from 'path';
 import dotenv from 'dotenv';
 
 // Get the directory of the current module
@@ -14,15 +13,7 @@ const __dirname = path.dirname(__filename);
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
 
-function showMessageBox(message, title = "Error") {
-  try {
-    // escape quotes
-    const safeMsg = message.replace(/"/g, "'");
-    execSync(`msg * "${title}: ${safeMsg}"`);
-  } catch (err) {
-    console.error("⚠️ Failed to show message box:", err.message);
-  }
-}
+const runner = new Utils();
 
 // Append .env to current path
 const envpath = path.join(currentDir, ".env");
@@ -65,7 +56,7 @@ async function main() {
     }
 
     console.log('All done!');
-    showMessageBox(`All completed for ${fullPath}`, "Completed");
+    await runner.showMessageBox(`All completed for ${fullPath}`, "Completed");
      // Wait for 2 seconds before exiting to ensure all operations are completed
      setTimeout(() => {
        process.exit(0);
