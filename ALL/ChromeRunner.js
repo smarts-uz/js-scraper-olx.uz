@@ -4,7 +4,7 @@ import { dirname } from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { existsSync } from 'fs';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -61,20 +61,29 @@ export class ChromeRunner {
     console.log("agen **Ko'rib chiqsin hamma !*", agent);
     
     const args = [
-      `--user-data-dir=${normalized}`,
-      `--remote-debugging-port=${port}`,
-      '--no-default-browser-check',
+      '--force-color-profile=srgb',
+      '--metrics-recording-only',
       '--no-first-run',
-      '--window-position=0,0',
+      '--password-store=basic',
+      '--use-mock-keychain',
+      `--user-data-dir=${normalized}`,
+      '--no-default-browser-check',
+      '--disable-background-mode',
+      '--disable-extension-welcome-page',
+      '--autoplay-policy=no-user-gesture-required',
+      '--protected-enablechromeversion=1',
+      '---protected-gems=2147483649',
+      '--js-flags=--ignore_debugger',
+      '--protected-webgpu=nvidia,ampere',
+      '--disable-features=HttpsUpgrades,HttpsFirstModeV2ForEngagedSites,HttpsFirstBalancedMode,HttpsFirstBalancedModeAutoEnable,EnableFingerprintingProtectionFilter,FlashDeprecationWarning,EnablePasswordsAccountStorage,RendererCodeIntegrity',
       '--disable-popup-blocking',
       '--hide-crash-restore-bubble',
-      '--disable-setuid-sandbox',
-      `--lang=${lang}`,
-      '--force-color-profile=srgb',
-      '--disable-background-mode',
       `--user-agent=${agent}`,
+      `--lang=${lang}`,
       '--no-sandbox',
-      '--disable-features=RendererCodeIntegrity,CanvasNoise,FlashDeprecationWarning',
+      '--disable-setuid-sandbox',
+      '--window-position=0,0',
+      `--remote-debugging-port=${port}`,
     ];
 
     if (extensions.length > 0) {
@@ -89,7 +98,7 @@ export class ChromeRunner {
     let browser;
     try {
       browser = await puppeteer.launch({
-        executablePath: chromeExePath,
+        // executablePath: chromeExePath,
         headless: headlessENV, // ⚠️ extensionlar faqat headless=false da ishlaydi
         defaultViewport: { width: 800, height: 600 },
         args,
