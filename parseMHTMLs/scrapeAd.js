@@ -70,13 +70,13 @@ export async function scrapeAd(url, saveDir, browser) {
         console.log("✅ Phone number already visible (no button).");
         phoneShown = true;
       } else {
-        console.warn("⚠️ No phone button or visible phone found (returning true as requested).");
+        console.warn("⚠️ No phone button not found.");
         phoneShown = true; // As you requested — always true
       }
     }
   } catch (err) {
     console.warn(`⚠️ Phone handling error: ${err.message}`);
-    phoneShown = true; // Always true — no error thrown
+    phoneShown = false;
   }
 
   // Capture page snapshot as MHTML
