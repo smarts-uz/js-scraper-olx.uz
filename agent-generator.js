@@ -1,5 +1,8 @@
-import userAgentGenerator from "user-agents-generator";
+import UserAgent from 'user-agents';
 
-const chromeUserAgent = userAgentGenerator.chrome();
 
-console.log("Chrome User Agent:",chromeUserAgent);
+const userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop'}]);
+console.log(userAgent.toString());
+console.log(JSON.stringify(userAgent.data, null, 2));
+
+// `--user-agent=${userAgent.toString()}`
