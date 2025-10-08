@@ -4,6 +4,9 @@ import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
 import { ChromeRunner } from '../ALL/ChromeRunner.js';
 import { Utils } from '../ALL/Utils.js';
+import UserAgent from 'user-agents';
+
+
 dotenv.config();
 
 const runner = new ChromeRunner();
@@ -34,18 +37,20 @@ export async function tryProfilesForUrl(
     let browser = null;
     try {
       const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
-    
+      const userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop'}]);
+      
     const profileData = {
       number: currentProfileIndex + 1,
       currentProfileIndex,
       profilePath: profile,
+      agent: userAgent.toString(),
+      lang:lang,
       timestamp: new Date().toISOString(),
-      lang:lang
     };
 
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-        browser = await runner.run(profile,lang);
+        browser = await runner.run(profile,lang,userAgent.toString());
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
       lastSavedPath = savedPath;
       await browser.close();
