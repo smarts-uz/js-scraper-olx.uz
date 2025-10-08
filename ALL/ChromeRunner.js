@@ -22,7 +22,7 @@ export class ChromeRunner {
     this.win = path.win32;
   }
 
-  async run(rawPath, lang, port = 9222) {
+  async run(rawPath, lang,agent, port = 9222) {
     if (!rawPath) throw new Error('❗ rawPath argumenti kerak (user data dir yo‘li)');
     if (!lang) throw new Error('❗ lang argumenti kerak (lang)');
 
@@ -58,7 +58,8 @@ export class ChromeRunner {
     if (!existsSync(chromeExePath)) {
       throw new Error(`❌ chrome.exe topilmadi: ${chromeExePath}`);
     }
-
+    console.log("agen **Ko'rib chiqsin hamma !*", agent);
+    
     const args = [
       `--user-data-dir=${normalized}`,
       `--remote-debugging-port=${port}`,
@@ -71,6 +72,7 @@ export class ChromeRunner {
       `--lang=${lang}`,
       '--force-color-profile=srgb',
       '--disable-background-mode',
+      `--user-agent=${agent}`,
       '--no-sandbox',
       '--disable-features=RendererCodeIntegrity,CanvasNoise,FlashDeprecationWarning',
     ];
@@ -82,16 +84,13 @@ export class ChromeRunner {
       );
     }
 
-    // console.log('🚀 Chrome (puppeteer orqali) ishga tushirilmoqda...');
-    // console.log('📁 User-data-dir:', normalized);
-    // console.log('📁 Extensions:', extensions.length);
-    // console.log('📁 Headless:', headlessENV);
+  
 
     let browser;
     try {
       browser = await puppeteer.launch({
         executablePath: chromeExePath,
-        headless: false, // ⚠️ extensionlar faqat headless=false da ishlaydi
+        headless: headlessENV, // ⚠️ extensionlar faqat headless=false da ishlaydi
         defaultViewport: { width: 800, height: 600 },
         args,
       });
