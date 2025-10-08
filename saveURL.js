@@ -77,6 +77,7 @@ const tasks = [
   try {
     await scrapeMultipleSearches(tasks);
    await runner.showMessageBox(`All URLs downloaded for ${mhtmlFilePath}`, "Completed");
+   process.exit(0);
   } catch (err) {
     console.error("❌ Error during scraping:", err);
   }
