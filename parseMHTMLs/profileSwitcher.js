@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
-import { launchBrowserWithProfile } from './launchBrowser.js';
 import { ChromeRunner } from '../ALL/ChromeRunner.js';
 import {sendTelegramMessage} from '../utils.js';
 dotenv.config();
@@ -45,7 +44,6 @@ export async function tryProfilesForUrl(
 
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-      // browser = await launchBrowserWithProfile(extensionToUse, profile, lang);
         browser = await runner.run(profile,lang);
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
       lastSavedPath = savedPath;
