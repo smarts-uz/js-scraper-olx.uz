@@ -44,8 +44,6 @@ export async function scrapeAd(url, saveDir, browser) {
     const scrollPosition = getRandomInt(0, maxScroll);
     console.log(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
     await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
-    
-    // Add small random delay between scrolls to mimic human behavior
     const scrollDelay = getRandomFloat(0.5, 2.5);
     await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
   }
@@ -54,7 +52,7 @@ export async function scrapeAd(url, saveDir, browser) {
   console.log(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
   await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
 
-  // ✅ Handle phone number display (never throws error)
+  // ✅ Handle phone number display
   let phoneShown = false;
   try {
     const phoneButton = await page.$('button[data-testid="show-phone"]');
@@ -70,24 +68,11 @@ export async function scrapeAd(url, saveDir, browser) {
         console.log("✅ Phone number already visible (no button).");
         phoneShown = true;
       } else {
-        console.warn("⚠️ No phone button not found.");
-        phoneShown = true; // As you requested — always true
+        console.warn("⚠️ No phone button found.");
       }
     }
   } catch (err) {
     console.warn(`⚠️ Phone handling error: ${err.message}`);
-    phoneShown = false;
-  }
-
-  // Capture page snapshot as MHTML
-  let data = null;
-  try {
-    const cdp = await page.target().createCDPSession();
-    await cdp.send("Page.enable");
-    const snapshot = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
-    data = snapshot.data;
-  } catch (err) {
-    console.error(`⚠️ Failed to capture MHTML for ${url}: ${err.message}`);
   }
 
   // Safe file naming
@@ -99,10 +84,19 @@ export async function scrapeAd(url, saveDir, browser) {
   if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
 
   let savedPath = null;
-  if (data) {
-    fs.writeFileSync(filePath, data);
-    console.log(`💾 Saved: ${filePath}`);
-    savedPath = filePath;
+
+  if (phoneShown) {
+    // ✅ Save as MHTML only if phoneShown = true
+    try {
+      const cdp = await page.target().createCDPSession();
+      await cdp.send("Page.enable");
+      const snapshot = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
+      fs.writeFileSync(filePath, snapshot.data);
+      console.log(`💾 Saved (MHTML): ${filePath}`);
+      savedPath = filePath;
+    } catch (err) {
+      console.error(`⚠️ Failed to capture MHTML for ${url}: ${err.message}`);
+    }
   } else {
     const htmlPath = filePath.replace(/\.mhtml$/, ".html");
     await fs.promises.writeFile(htmlPath, await page.content(), "utf-8");
