@@ -1,4 +1,5 @@
-node "D:\Projects\Smart Software\JS\js-scraper-olx.uz\saveURL.js" "d:\Projects\Smart Software\JS\- Theory\Бризер рекуператор настенный FUNAI FUJI ERW-150 XD (чёрный)  7 990 000 сум - Климатическое оборудова.mhtml" 
+node "D:\Projects\Smart Software\JS\js-scraper-olx.uz\saveURL.js" "Z:\Equipme\Delivery\- Theory\бензин - Сырьё _ материалы в Ташкент - OLX.uz.mhtml" 
+node "D:\Projects\Smart Software\JS\js-scraper-olx.uz\saveMHTML.js" "Z:\Equipme\Delivery\- Theory\бензин - Сырьё _ материалы в Ташкент - OLX.uz.mhtml" 
 node "D:\Projects\Smart Software\JS\js-scraper-olx.uz\saveMHTML.js" "d:\Projects\Smart Software\JS\- Theory\Бризер рекуператор настенный FUNAI FUJI ERW-150 XD (чёрный)  7 990 000 сум - Климатическое оборудова.mhtml" 
 
 node "D:\Projects\Smart Software\JS\js-scraper-olx.uz\saveMHTML.js" "d:\Projects\Smart Software\JS\- Theory\app"
