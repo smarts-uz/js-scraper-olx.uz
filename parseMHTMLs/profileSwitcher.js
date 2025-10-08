@@ -26,6 +26,7 @@ export async function tryProfilesForUrl(
   let success = false;
   let lastSavedPath = null;
   let attempts = 0;
+  let profileData = {};
 
   while (!success && attempts < profileDirs.length) {
     const profile = profileDirs[currentProfileIndex];
@@ -39,7 +40,7 @@ export async function tryProfilesForUrl(
       const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
       const userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop'}]);
       
-    const profileData = {
+     profileData = {
       number: currentProfileIndex + 1,
       currentProfileIndex,
       profilePath: profile,

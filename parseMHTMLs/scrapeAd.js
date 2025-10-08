@@ -7,7 +7,6 @@ const __dirname = path.dirname(__filename);
 
 const Wait_Min = process.env.Wait_Min || 5;
 const Wait_Max = process.env.Wait_Max || 30;
-// Add Scroll_Count_Min and Scroll_Count_Max for number of scrolls
 const Scroll_Count_Min = process.env.Scroll_Count_Min || 2;
 const Scroll_Count_Max = process.env.Scroll_Count_Max || 5;
 
@@ -15,16 +14,11 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-/**
- * Generates a random float between min and max
- */
 function getRandomFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-/**
- * Scrapes an ad from a URL and saves it as MHTML
- */
+
 export async function scrapeAd(url, saveDir, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
@@ -32,16 +26,13 @@ export async function scrapeAd(url, saveDir, browser) {
   console.log(`➡️ Loading ad: ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-  // Add human-like scrolling behavior during wait time
+  // Random waiting and scrolling to simulate human behavior
   const waitTime = getRandomInt(parseInt(Wait_Min), parseInt(Wait_Max));
   const scrollCount = getRandomInt(parseInt(Scroll_Count_Min), parseInt(Scroll_Count_Max));
   
-  console.log(`⏳ Waiting for ${waitTime} seconds with ${scrollCount} random scrolls...`);
+  console.log(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
   
-  // Calculate time intervals for scrolling
   const timePerScroll = waitTime / (scrollCount + 1);
-  
-  // Get page dimensions for more realistic scrolling
   const pageHeight = await page.evaluate(() => document.body.scrollHeight);
   const viewportHeight = await page.evaluate(() => window.innerHeight);
   const maxScroll = pageHeight - viewportHeight;
@@ -49,33 +40,43 @@ export async function scrapeAd(url, saveDir, browser) {
   // Initial wait before first scroll
   await new Promise(resolve => setTimeout(resolve, timePerScroll * 1000));
   
-  // Perform multiple random scrolls at different positions
   for (let i = 0; i < scrollCount; i++) {
-    // Generate random scroll position within page bounds
     const scrollPosition = getRandomInt(0, maxScroll);
-    console.log(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to position ${scrollPosition}px...`);
+    console.log(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
     await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
     
     // Add small random delay between scrolls to mimic human behavior
     const scrollDelay = getRandomFloat(0.5, 2.5);
     await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
   }
-  
-  // Final scroll to a random position before clicking phone button
+
   const finalScrollPosition = getRandomInt(0, maxScroll);
-  console.log(`🖱️ Final scroll: Scrolling to position ${finalScrollPosition}px before phone button click...`);
+  console.log(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
   await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
 
-  // Try to show phone number
+  // ✅ Handle phone number display (never throws error)
   let phoneShown = false;
   try {
-    await page.waitForSelector('button[data-testid="show-phone"]', { timeout: 5000 });
-    await page.click('button[data-testid="show-phone"]');
-    await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-    console.log("✅ Phone number displayed!");
-    phoneShown = true;
-  } catch {
-    console.warn("⚠️ Failed to display phone number.");
+    const phoneButton = await page.$('button[data-testid="show-phone"]');
+    if (phoneButton) {
+      console.log("📞 Found phone button, clicking...");
+      await phoneButton.click();
+      await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
+      console.log("✅ Phone number displayed!");
+      phoneShown = true;
+    } else {
+      const phoneVisible = await page.$('[data-testid="contact-phone"]');
+      if (phoneVisible) {
+        console.log("✅ Phone number already visible (no button).");
+        phoneShown = true;
+      } else {
+        console.warn("⚠️ No phone button or visible phone found (returning true as requested).");
+        phoneShown = true; // As you requested — always true
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ Phone handling error: ${err.message}`);
+    phoneShown = true; // Always true — no error thrown
   }
 
   // Capture page snapshot as MHTML
@@ -89,7 +90,7 @@ export async function scrapeAd(url, saveDir, browser) {
     console.error(`⚠️ Failed to capture MHTML for ${url}: ${err.message}`);
   }
 
-  // Generate safe file name
+  // Safe file naming
   let title = await page.title();
   let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
   if (!safeName) safeName = `ad_${Date.now()}`;
