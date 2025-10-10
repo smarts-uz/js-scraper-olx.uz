@@ -32,7 +32,7 @@ export async function tryProfilesForUrl(
     const profile = profileDirs[currentProfileIndex];
     console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
-    const projectDir = process.cwd();
+    const projectDir = path.resolve(new URL('..', import.meta.url).pathname.slice(1));
     const profileIndexFile = path.join(projectDir, 'profile.json');
     
     let browser = null;
@@ -51,7 +51,7 @@ export async function tryProfilesForUrl(
 
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-        browser = await runner.run(profile,lang,userAgent.toString());
+        browser = await runner.run(profile,lang,userAgent.toString(),true);
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
       lastSavedPath = savedPath;
       await browser.close();

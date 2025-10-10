@@ -54,23 +54,19 @@ export async function scrapeAd(url, saveDir, browser) {
   // ✅ Handle phone number display
   let phoneShown = false;
   try {
-    const phoneButton = await page.$('button[data-testid="show-phone"]');
-    if (phoneButton) {
-      console.log("📞 Found phone button, clicking...");
-      await phoneButton.click();
-      await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-      console.log("✅ Phone number displayed!");
-      phoneShown = true;
-    } else {
-      const phoneVisible = await page.$('[data-testid="contact-phone"]');
-      if (phoneVisible) {
-        console.log("✅ Phone number already visible (no button).");
-        phoneShown = true;
-      } else {
-        phoneShown = true;
-        console.warn("⚠️ No phone button or phone element found.");
+    const phoneButtons = await page.$$('button[data-testid="show-phone"]');
+      for (const btn of phoneButtons) {
+        const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+        if (visible) {
+          console.log('📞 Found visible phone button, clicking...');
+          await btn.click();
+          await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
+          console.log('✅ Phone number displayed!');
+          phoneShown = true;
+          break;
+        }
       }
-    }
+
   } catch (err) {
     console.warn(`⚠️ Phone handling error: ${err.message}`);
   }

@@ -6,3 +6,5 @@ profiles.txt
 readme-k.txt
 rd.md
 profile.json
+CmdLine/*
+!CmdLine/

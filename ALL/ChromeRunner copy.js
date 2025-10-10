@@ -159,7 +159,7 @@ export class ChromeRunner {
         const browser = await puppeteerCore.launch({
             executablePath,
             args: filteredArgs,
-            headless:true ,
+            headless: true,
         });
 
         const pages = await browser.pages();
