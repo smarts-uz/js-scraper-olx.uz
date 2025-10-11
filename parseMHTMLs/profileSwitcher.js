@@ -5,6 +5,7 @@ import { scrapeAd } from './scrapeAd.js';
 import { ChromeRunner } from '../ALL/ChromeRunner.js';
 import { Utils } from '../ALL/Utils.js';
 import UserAgent from 'user-agents';
+import { fileURLToPath } from 'url';
 
 
 dotenv.config();
@@ -33,7 +34,9 @@ export async function tryProfilesForUrl(
     const profile = profileDirs[currentProfileIndex];
     console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
-    const projectDir = path.resolve(new URL('..', import.meta.url).pathname.slice(1));
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const projectDir = path.resolve(__dirname, '..');
     const profileIndexFile = path.join(projectDir, 'profile.json');
     
     let browser = null;
