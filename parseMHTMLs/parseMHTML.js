@@ -3,6 +3,9 @@ import path from 'path';
 import { readUrlsFromDirectory } from './utils.js';
 import { tryProfilesForUrl } from './profileSwitcher.js';
 import { fileURLToPath } from 'url';
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,8 +18,8 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
    
     if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
-  console.log(`📂 Reading .url files from: ${inputDir}`);
-  console.log(`💾 Saving MHTML files to: ${outputDir}`);
+  logger.info(`📂 Reading .url files from: ${inputDir}`);
+  logger.info(`💾 Saving MHTML files to: ${outputDir}`);
   console.log(`📁 Moving processed .url files to: ${otherDir}`);
 
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });

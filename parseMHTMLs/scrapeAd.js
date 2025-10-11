@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,14 +64,14 @@ export async function scrapeAd(url, saveDir, browser) {
           console.log('📞 Found visible phone button, clicking...');
           await btn.click();
           await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-          console.log('✅ Phone number displayed!');
+          logger.info('✅ Phone number displayed!');
           phoneShown = true;
           break;
         }
       }
           phoneShown = true;
   } catch (err) {
-    console.warn(`⚠️ Phone handling error: ${err.message}`);
+    logger.warn(`⚠️ Phone handling error: ${err.message}`);
   }
 
   // Safe file naming
