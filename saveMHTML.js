@@ -46,13 +46,13 @@ async function main() {
       const inputDir = path.join(parentDir, 'App');
       const outputDir = parentDir;
       console.log(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
-      await processUrlFiles(inputDir, outputDir);
+      await processUrlFiles(inputDir, outputDir,false);
     } else {
       // Default behavior: set input directory to the 'App' folder next to the MHTML file
       const inputDir = path.join(mhtmlDir, 'App');
       const outputDir = mhtmlDir;
       console.log(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
-      await processUrlFiles(inputDir, outputDir);
+      await processUrlFiles(inputDir, outputDir,false);
     }
 
     console.log('All done!');

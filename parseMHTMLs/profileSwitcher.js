@@ -21,7 +21,8 @@ export async function tryProfilesForUrl(
   profileDirs,
   currentProfileIndex,
   globalLangIndex,
-  currentSavedCount
+  currentSavedCount,
+  is_native
 ) {
   let success = false;
   let lastSavedPath = null;
@@ -51,7 +52,7 @@ export async function tryProfilesForUrl(
 
     fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-        browser = await runner.run(profile,lang,userAgent.toString(),true);
+        browser = await runner.run(profile,lang,userAgent.toString(),is_native);
       const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
       lastSavedPath = savedPath;
       await browser.close();

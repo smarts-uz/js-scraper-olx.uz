@@ -42,7 +42,7 @@ findRawPathInTxtFiles(rawPath) {
     const files = fs.readdirSync(folderPath);
 
     const txtFiles = files.filter(file => file.endsWith(".txt"));
-    console.log("txt fayllar:", txtFiles);
+    // console.log("txt fayllar:", txtFiles);
 
     // 🔧 normalizePath yordamchi funksiyasi
     const normalizePath = (p) =>

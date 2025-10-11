@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
+export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = null) {
     const projectDir = process.cwd();
     const profileIndexFile = path.join(projectDir, 'profile.json');
     const Folder_Ixbrowser = process.env.Folder_Ixbrowser;
@@ -81,7 +81,8 @@ export async function processUrlFiles(inputDir, outputDir, otherDir = null) {
       profileDirs,
       currentProfileIndex,
       globalLangIndex,
-      i
+      i,
+      is_native
     );
     currentProfileIndex = newProfileIndex;
     globalLangIndex = newGlobalLangIndex;

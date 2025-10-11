@@ -153,14 +153,21 @@ export class ChromeRunner {
             .map(a => a.includes(":\\") ? utils.cleanPath(a) : a);
 
 
-        console.log("⚙️ Chrome args:", filteredArgs);
-
+        // console.log("⚙️ Chrome args:", filteredArgs);
+        let extPath; 
+        extPath = filteredArgs.find(a => a.startsWith("--load-extension"));
+        extPath= extPath ? extPath.split("=")[1] : null;
+        if (!extPath) throw new Error("❌ Extension .crx fayli topilmadi!");
         // Puppeteer ishga tushurish
-        const browser = await puppeteerCore.launch({
-            executablePath,
-            args: filteredArgs,
-            headless:true ,
-        });
+            const browser = await puppeteerCore.launch({
+              executablePath,
+              headless: false,
+              args: [
+                `--disable-extensions-except=${extPath}`,
+                `--load-extension=${extPath}`,
+                ...filteredArgs.filter(a => !a.startsWith("--load-extension"))
+              ]
+            })
 
         const pages = await browser.pages();
         const page = pages.length ? pages[0] : await browser.newPage();

@@ -66,7 +66,7 @@ export async function scrapeAd(url, saveDir, browser) {
           break;
         }
       }
-
+          phoneShown = true;
   } catch (err) {
     console.warn(`⚠️ Phone handling error: ${err.message}`);
   }
