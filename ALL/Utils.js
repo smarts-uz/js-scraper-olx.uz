@@ -28,6 +28,16 @@ export class Utils {
             return global.__utils_instance__;
         }
 
+         // ✅ Logs papkasi parent folderda bo‘ladi
+        const logsDir = path.join(__dirname, '..', 'logs');
+        if (!fs.existsSync(logsDir)) {
+            fs.mkdirSync(logsDir, { recursive: true });
+            console.log("✅ Logs directory created at:", logsDir);
+        }
+
+        // ✅ To‘liq absolute path ishlatyapmiz
+        const logFilePattern = path.join(logsDir, '%Y-%m-%d.log');
+
         // Loger instansiyasini yaratamiz
         this.log = bunyan.createLogger({
             name: "next-bunyan-test",
@@ -35,7 +45,7 @@ export class Utils {
                 {
                     type: 'raw',
                     stream: new RotatingFileStream({
-                        path: './logs/%Y-%m-%d.log',
+                        path: logFilePattern,
                         period: '1d',
                         totalFiles: 7,
                         rotateExisting: true,
