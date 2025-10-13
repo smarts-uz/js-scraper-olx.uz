@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { Utils } from '../ALL/Utils.js';
 
-const logger = new Utils().log();
+const logger = new Utils().log;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,14 +25,14 @@ export async function scrapeAd(url, saveDir, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 900 });
 
-  console.log(`➡️ Loading ad: ${url}`);
+  logger.info(`➡️ Loading ad: ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
   // Random waiting and scrolling to simulate human behavior
   const waitTime = getRandomInt(parseInt(Wait_Min), parseInt(Wait_Max));
   const scrollCount = getRandomInt(parseInt(Scroll_Count_Min), parseInt(Scroll_Count_Max));
 
-  console.log(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
+  logger.info(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
 
   const timePerScroll = waitTime / (scrollCount + 1);
   const pageHeight = await page.evaluate(() => document.body.scrollHeight);
@@ -44,14 +44,14 @@ export async function scrapeAd(url, saveDir, browser) {
 
   for (let i = 0; i < scrollCount; i++) {
     const scrollPosition = getRandomInt(0, maxScroll);
-    console.log(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
+    logger.info(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
     await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
     const scrollDelay = getRandomFloat(0.5, 2.5);
     await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
   }
 
   const finalScrollPosition = getRandomInt(0, maxScroll);
-  console.log(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
+  logger.info(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
   await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
 
   // ✅ Handle phone number display
@@ -61,7 +61,7 @@ export async function scrapeAd(url, saveDir, browser) {
       for (const btn of phoneButtons) {
         const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
         if (visible) {
-          console.log('📞 Found visible phone button, clicking...');
+          logger.info('📞 Found visible phone button, clicking...');
           await btn.click();
           await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
           logger.info('✅ Phone number displayed!');
@@ -87,7 +87,7 @@ export async function scrapeAd(url, saveDir, browser) {
   if (phoneShown) {
     // ✅ Save as MHTML only if phoneShown = true
     try {
-      console.log("🧩 Capturing MHTML snapshot...");
+      logger.info("🧩 Capturing MHTML snapshot...");
       const cdp = await page.createCDPSession();
       await cdp.send("Page.enable");
 
@@ -97,7 +97,7 @@ export async function scrapeAd(url, saveDir, browser) {
       try {
         const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
         fs.writeFileSync(filePath, data);
-        console.log(`💾 Saved (MHTML): ${filePath}`);
+        logger.info(`💾 Saved (MHTML): ${filePath}`);
         savedPath = filePath;
       } catch (mhtmlErr) {
         // More specific error handling for MHTML capture
@@ -105,18 +105,18 @@ export async function scrapeAd(url, saveDir, browser) {
           mhtmlErr.message &&
           mhtmlErr.message.includes("Protocol error (Page.captureSnapshot): Failed  to generate MHTML")
         ) {
-          console.error(
+          logger.error(
             `❌ Failed to capture MHTML for ${url}: The page may contain resources or frames that prevent MHTML generation.`
           );
         } else {
-          console.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
+          logger.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
         }
       }
     } catch (err) {
-      console.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
+      logger.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
     }
   } else {
-    console.log("⚠️ Phone number not shown. Skipping MHTML capture.");
+    logger.info("⚠️ Phone number not shown. Skipping MHTML capture.");
   }
 
   await page.close();

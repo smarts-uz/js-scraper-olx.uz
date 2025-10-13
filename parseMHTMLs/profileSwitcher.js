@@ -7,6 +7,7 @@ import { Utils } from '../ALL/Utils.js';
 import UserAgent from 'user-agents';
 import { fileURLToPath } from 'url';
 
+const logger = new Utils().log;
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ export async function tryProfilesForUrl(
 
   while (!success && attempts < profileDirs.length) {
     const profile = profileDirs[currentProfileIndex];
-    console.log(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
+    logger.info(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
@@ -61,14 +62,14 @@ export async function tryProfilesForUrl(
       await browser.close();
 
       if (phoneShown) {
-        console.log(`✅ Phone shown with profile ${profile} (lang: ${lang})`);
+        logger.info(`✅ Phone shown with profile ${profile} (lang: ${lang})`);
         success = true;
       } else {
-        console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
+        logger.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
         await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
 
         if (currentProfileIndex === profileDirs.length - 1) {
-          console.error('❌ All profiles failed. Stopping process...');
+          logger.error('❌ All profiles failed. Stopping process...');
           profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
           fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
           await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
@@ -78,7 +79,7 @@ export async function tryProfilesForUrl(
         globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
       }
     } catch (err) {
-      console.error(`❌ Error with profile ${profile}: ${err.message}`);
+      logger.error(`❌ Error with profile ${profile}: ${err.message}`);
       // Check if this is a recoverable error
       const isRecoverableError = err.message.includes('Target closed') || 
                                 err.message.includes('Protocol error') || 
@@ -89,13 +90,13 @@ export async function tryProfilesForUrl(
         try {
           await browser.close();
         } catch (closeErr) {
-          console.warn(`⚠️ Error closing browser: ${closeErr.message}`);
+          logger.warn(`⚠️ Error closing browser: ${closeErr.message}`);
         }
       }
       
       // If it's a recoverable error, try the next profile
       if (isRecoverableError) {
-        console.log(`🔄 Recoverable error detected. Trying next profile...`);
+        logger.info(`🔄 Recoverable error detected. Trying next profile...`);
         // Add a small delay to allow Chrome to fully close
         await new Promise(resolve => setTimeout(resolve, 2000));
         

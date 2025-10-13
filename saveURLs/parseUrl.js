@@ -2,6 +2,9 @@ import puppeteer from "puppeteer";
 import { scrapeAd } from './scrapeAd.js';
 import { getPaginationUrls } from './pagination.js';
 import { autoScroll, sleep } from './utils.js';
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log;
 
 
 
@@ -15,7 +18,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
   // Получаем все страницы пагинации
   const mainPage = await localBrowser.newPage();
   await mainPage.setViewport({ width: 1280, height: 900 });
-  console.log(`📖 Загружаю главную страницу для получения пагинации: ${searchUrl}`);
+  logger.info(`📖 Загружаю главную страницу для получения пагинации: ${searchUrl}`);
   await mainPage.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
   
   // Прокручиваем вниз для загрузки пагинации
@@ -25,7 +28,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
   const paginationUrls = await getPaginationUrls(mainPage);
   await mainPage.close();
   
-  console.log(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
+  logger.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
   
   // Если пагинация не найдена, обрабатываем только первую страницу
   let urlsToProcess = [searchUrl];
@@ -36,11 +39,11 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
     urlsToProcess = [...new Set(urlsToProcess)];
   }
   
-  console.log(`📄 Всего будет обработано ${urlsToProcess.length} страниц`);
+  logger.info(`📄 Всего будет обработано ${urlsToProcess.length} страниц`);
   
   // Обрабатываем каждую страницу поиска
   for (const [index, url] of urlsToProcess.entries()) {
-    console.log(`📄 Обрабатываю страницу ${index + 1}/${urlsToProcess.length}: ${url}`);
+    logger.info(`📄 Обрабатываю страницу ${index + 1}/${urlsToProcess.length}: ${url}`);
     
     const page = await localBrowser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
@@ -61,7 +64,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
     
     // Убираем дубликаты
     adLinks = [...new Set(adLinks)];
-    console.log(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
+    logger.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
     
     await page.close();
     
@@ -73,7 +76,7 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
     
     // Делаем паузу между страницами
     if (index < urlsToProcess.length - 1) {
-      console.log("⏳ Пауза перед следующей страницей...");
+      logger.info("⏳ Пауза перед следующей страницей...");
       await sleep(3000);
     }
   }
@@ -82,14 +85,14 @@ export async function scrapeSearch(searchUrl, saveDir, browser = null) {
     await localBrowser.close();
   }
 
-  console.log(`🎉 Сохранено ${adsCount} объявлений с поиска.`);
+  logger.info(`🎉 Сохранено ${adsCount} объявлений с поиска.`);
 }
 
 /**
  * Accepts an array of searches and saves all ads
  */
 export async function scrapeMultipleSearches(tasks) {
-  console.log(process.env.HeadlessURL,'headlessURL');
+  logger.info(process.env.HeadlessURL,'headlessURL');
 
  const browser = await puppeteer.launch({ //komol
     headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
@@ -102,7 +105,7 @@ export async function scrapeMultipleSearches(tasks) {
   }
 
   await browser.close();
-  console.log("🎉 Все поиски обработаны!");
+  logger.info("🎉 Все поиски обработаны!");
 }
 
 // 🚀 CLI for a single search
@@ -112,9 +115,9 @@ if (process.argv.length >= 4) {
 
   scrapeSearch(url, saveDir)
     .then(() => {
-      console.log("🎉 Готово!");
+      logger.info("🎉 Готово!");
     })
     .catch((err) => {
-      console.error("❌ Ошибка:", err);
+      logger.error("❌ Ошибка:", err);
     });
 }

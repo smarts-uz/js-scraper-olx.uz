@@ -1,4 +1,8 @@
 import { sleep } from './utils.js';
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log;
+
 
 export async function getPaginationUrls(page) {
   try {
@@ -134,7 +138,7 @@ export async function getPaginationUrls(page) {
     
     return uniqueUrls;
   } catch (error) {
-    console.warn("⚠️ Ошибка при получении пагинации:", error.message);
+    logger.warn("⚠️ Ошибка при получении пагинации:", error.message);
     return [];
   }
 }

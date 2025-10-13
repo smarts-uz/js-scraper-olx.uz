@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node getCategories.js",
     "scrape": "node getCategories.js",
-    "get-data": "node -e \"import('./db.js').then(async (db) => { const sqlite3 = (await import('sqlite3')).default; const { open } = await import('sqlite'); const database = await open({ filename: './categories.db', driver: sqlite3.Database }); const categories = await database.all('SELECT * FROM categories'); const subcategories = await database.all('SELECT s.*, c.name as parent_name FROM subcategories s JOIN categories c ON s.parent_id = c.id'); console.log('Categories:', categories); console.log('Subcategories:', subcategories); await database.close(); })\"",
+    "get-data": "node -e \"import('./db.js').then(async (db) => { const sqlite3 = (await import('sqlite3')).default; const { open } = await import('sqlite'); const database = await open({ filename: './categories.db', driver: sqlite3.Database }); const categories = await database.all('SELECT * FROM categories'); const subcategories = await database.all('SELECT s.*, c.name as parent_name FROM subcategories s JOIN categories c ON s.parent_id = c.id'); logger.info('Categories:', categories); logger.info('Subcategories:', subcategories); await database.close(); })\"",
     "init-db": "node getCategories.js"
   },
   "keywords": [
@@ -18,6 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "bunyan": "^1.8.15",
+    "bunyan-rotating-file-stream": "^2.0.6",
     "dotenv": "17.2.3",
     "node-telegram-bot-api": "^0.66.0",
     "puppeteer": "24.23.0",

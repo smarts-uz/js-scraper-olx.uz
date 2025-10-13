@@ -1,5 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log;
 
 /**
  * Reads .url files from directory

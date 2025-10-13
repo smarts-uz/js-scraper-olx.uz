@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import { existsSync } from 'fs';
 import puppeteer from 'puppeteer';
 import puppeteerCore from 'puppeteer-core';
-import { Utils } from '../ALL/Utils.js';
+import { Utils } from './Utils.js';
 import {readFileSync } from 'fs';
 
 
@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const envpath = path.join(__dirname, "..", ".env");
 const utils=new Utils();
+const logger=utils.log;
 dotenv.config({ path: envpath });
 const headlessENV = process.env.Headless?.toLowerCase() === 'true';
 
@@ -59,7 +60,7 @@ export class ChromeRunner {
             .filter(d => d.isDirectory())
             .map(d => this.win.join(extensionBase, d.name));
         } catch {
-          console.warn('⚠️ Extension papkasi topilmadi yoki bo‘sh:', extensionBase);
+          logger.warn('⚠️ Extension papkasi topilmadi yoki bo‘sh:', extensionBase);
         }
 
         if (!existsSync(chromeExePath)) {
@@ -106,9 +107,9 @@ export class ChromeRunner {
             args,
           });
 
-          console.log('✅ Puppeteer orqali Chrome ishga tushdi.',args);
+          logger.info('✅ Puppeteer orqali Chrome ishga tushdi.',args);
         } catch (err) {
-          console.error('❌ Puppeteer.launch() xatosi:', err.message);
+          logger.error('❌ Puppeteer.launch() xatosi:', err.message);
           throw err;
         }
 
@@ -121,9 +122,9 @@ export class ChromeRunner {
       return browser;
     }else{
         const txtPath = utils.findRawPathInTxtFiles(rawPath);
-        if (!txtPath) throw new Error("❌ Fayl topilmadi.");
+        if (!txtPath)   logger.error("❌ Fayl topilmadi.");
 
-        console.log(`✅ Chrome konfiguratsiya fayli: ${txtPath}`);
+        logger.info(`✅ Chrome konfiguratsiya fayli: ${txtPath}`);
 
         // Faylni o‘qish
         const lines = readFileSync(txtPath, "utf8")
@@ -139,7 +140,7 @@ export class ChromeRunner {
         if (!exeMatch) throw new Error("❌ chrome.exe topilmadi!");
 
         const executablePath = exeMatch[1].replace(/\\/g, "\\");
-        console.log("🧭 Chrome executable:", executablePath);
+        logger.info("🧭 Chrome executable:", executablePath);
 
         const regex = /"([^"]+)"|(\S+)/g;
         const args = [];
@@ -153,7 +154,7 @@ export class ChromeRunner {
             .map(a => a.includes(":\\") ? utils.cleanPath(a) : a);
 
 
-        // console.log("⚙️ Chrome args:", filteredArgs);
+        // logger.info("⚙️ Chrome args:", filteredArgs);
         let extPath; 
         extPath = filteredArgs.find(a => a.startsWith("--load-extension"));
         extPath= extPath ? extPath.split("=")[1] : null;
@@ -171,7 +172,7 @@ export class ChromeRunner {
 
         const pages = await browser.pages();
         const page = pages.length ? pages[0] : await browser.newPage();
-        console.log("✅ Puppeteer ishga tushdi!");
+        logger.info("✅ Puppeteer ishga tushdi!");
 
         return browser;
     }

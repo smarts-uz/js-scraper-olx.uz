@@ -5,6 +5,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
+const logger = new Utils().log;
+
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,14 +23,14 @@ const envpath = path.join(currentDir, ".env");
 // === Load environment variables ===
 dotenv.config({ path: envpath });
 
-console.log(process.cwd(), "cwd");
+logger.info(process.cwd(), "cwd");
 
 // Example usage
 async function main() {
   try {
     const mhtmlFilePath = argv[2];
     if (!mhtmlFilePath) {
-      console.error('Please provide an MHTML file path as a command line argument');
+      logger.error('Please provide an MHTML file path as a command line argument');
       process.exit(1);
     }
 
@@ -45,24 +47,24 @@ async function main() {
       const parentDir = path.dirname(mhtmlDir);
       const inputDir = path.join(parentDir, 'App');
       const outputDir = parentDir;
-      console.log(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
+      logger.info(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
       await processUrlFiles(inputDir, outputDir,false);
     } else {
       // Default behavior: set input directory to the 'App' folder next to the MHTML file
       const inputDir = path.join(mhtmlDir, 'App');
       const outputDir = mhtmlDir;
-      console.log(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
+      logger.info(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
       await processUrlFiles(inputDir, outputDir,false);
     }
 
-    console.log('All done!');
+    logger.info('All done!');
     await runner.showMessageBox(`All completed for ${fullPath}`, "Completed");
      // Wait for 2 seconds before exiting to ensure all operations are completed
      setTimeout(() => {
        process.exit(0);
      }, 2000);
     } catch (error) {
-    console.error('Error:', error);
+    logger.error('Error:', error);
   }
 }
 

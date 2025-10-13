@@ -5,7 +5,7 @@ import { tryProfilesForUrl } from './profileSwitcher.js';
 import { fileURLToPath } from 'url';
 import { Utils } from '../ALL/Utils.js';
 
-const logger = new Utils().log();
+const logger = new Utils().log;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,15 +20,15 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
 
   logger.info(`📂 Reading .url files from: ${inputDir}`);
   logger.info(`💾 Saving MHTML files to: ${outputDir}`);
-  console.log(`📁 Moving processed .url files to: ${otherDir}`);
+  logger.info(`📁 Moving processed .url files to: ${otherDir}`);
 
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
   if (!fs.existsSync(otherDir)) fs.mkdirSync(otherDir, { recursive: true });
 
   const urlObjects = readUrlsFromDirectory(inputDir);
-  console.log(`🔗 Found ${urlObjects.length} URLs to process`);
+  logger.info(`🔗 Found ${urlObjects.length} URLs to process`);
   if (urlObjects.length === 0) {
-    console.log("📭 No .url files found in the input directory");
+    logger.info("📭 No .url files found in the input directory");
     return;
   }
 
@@ -39,7 +39,7 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
 
   
   const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
-  console.log("📂 Browser Data directory:", browserDataPath);
+  logger.info("📂 Browser Data directory:", browserDataPath);
   
   let profileDirs = [];
   
@@ -55,7 +55,7 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
     throw new Error('No profile directories found');
   }
 
-  console.log("🌐 Starting processing with profiles:", profileDirs);
+  logger.info("🌐 Starting processing with profiles:", profileDirs);
 
   let currentProfileIndex = 0;
   let globalLangIndex = 0;
@@ -63,15 +63,15 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
     try {
       const profileData = JSON.parse(fs.readFileSync(profileIndexFile, 'utf8'));
       currentProfileIndex = profileData.currentProfileIndex || 0;
-      console.log(`🔄 Resuming from profile index: ${currentProfileIndex}`);
+      logger.info(`🔄 Resuming from profile index: ${currentProfileIndex}`);
     } catch (err) {
-      console.warn(`⚠️ Failed to read profile index file: ${err.message}`);
+      logger.warn(`⚠️ Failed to read profile index file: ${err.message}`);
     }
   }
 
   for (let i = 0; i < urlObjects.length; i++) {
     const { url, filePath, fileName } = urlObjects[i];
-    console.log(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
+    logger.info(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
 
     const {
       success,
@@ -92,19 +92,19 @@ export async function processUrlFiles(inputDir, outputDir,is_native, otherDir = 
     try {
       const destinationPath = path.join(otherDir, fileName);
       fs.renameSync(filePath, destinationPath);
-      console.log(`➡️ Moved ${fileName} to ${otherDir}`);
+      logger.info(`➡️ Moved ${fileName} to ${otherDir}`);
     } catch (err) {
-      console.error(`⚠️ Failed to move ${fileName}: ${err.message}`);
+      logger.error(`⚠️ Failed to move ${fileName}: ${err.message}`);
     }
 
     if (!success) {
       
-      console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
+      logger.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
-      console.log(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
+      logger.info(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
     }
   }
 
-  console.log("\n🏁 All URLs processed!");
+  logger.info("\n🏁 All URLs processed!");
   process.exit(0);
 }

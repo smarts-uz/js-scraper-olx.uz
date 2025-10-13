@@ -1,5 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { Utils } from '../ALL/Utils.js';
+
+const logger = new Utils().log;
 
 /**
  * Finds all directories that need to be checked for duplicates
@@ -47,13 +50,13 @@ function urlExistsInDirectories(url, currentSaveDir) {
                 return true;
               }
             } catch (err) {
-              console.warn(`⚠️  Could not read file: ${filePath}`);
+              logger.warn(`⚠️  Could not read file: ${filePath}`);
             }
           }
         }
       }
     } catch (err) {
-      console.warn(`⚠️  Could not access directory: ${dir}`);
+      logger.warn(`⚠️  Could not access directory: ${dir}`);
     }
   }
   
@@ -66,7 +69,7 @@ function urlExistsInDirectories(url, currentSaveDir) {
 export async function scrapeAd(url, saveDir, browser) {
   // Check if URL already exists in any relevant directory
   if (urlExistsInDirectories(url, saveDir)) {
-    console.log(`⏭️  URL already exists, skipping: ${url}`);
+    logger.info(`⏭️  URL already exists, skipping: ${url}`);
     return;
   }
 
@@ -90,5 +93,5 @@ URL=${url}`;
   }
 
   fs.writeFileSync(filePath, urlFileContent);
-  console.log(`💾 Saved URL file: ${filePath}`);
+  logger.info(`💾 Saved URL file: ${filePath}`);
 }

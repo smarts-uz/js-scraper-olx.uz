@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import { execSync } from 'child_process';
 import { Utils } from './ALL/Utils.js';
 
+const logger = new Utils().log;
+
 const runner = new Utils();
 
 // Get command line arguments
@@ -14,7 +16,7 @@ const mhtmlFilePath = args[0];
 // Get parent path for current file
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
-console.log(currentDir);
+logger.info(currentDir);
 
 // Append .env to current path
 const envpath = path.join(currentDir, ".env");
@@ -22,16 +24,16 @@ const envpath = path.join(currentDir, ".env");
 // === Load environment variables ===
 dotenv.config({ path: envpath });
 
-console.log(process.cwd(), "cwd");
+logger.info(process.cwd(), "cwd");
 
 if (!mhtmlFilePath) {
-  console.error("Please provide the path to the MHTML file as an argument.");
+  logger.error("Please provide the path to the MHTML file as an argument.");
   process.exit(1);
 }
 
 // Check if file exists
 if (!fs.existsSync(mhtmlFilePath)) {
-  console.error(`File not found: ${mhtmlFilePath}`);
+  logger.error(`File not found: ${mhtmlFilePath}`);
   process.exit(1);
 }
 
@@ -41,7 +43,7 @@ const urlMatch = mhtmlContent.match(/Snapshot-Content-Location:\s*(.*)/i);
 const extractedUrl = urlMatch ? urlMatch[1].trim() : null;
 
 if (!extractedUrl) {
-  console.error("Could not extract URL from MHTML file.");
+  logger.error("Could not extract URL from MHTML file.");
   process.exit(1);
 }
 
@@ -79,6 +81,6 @@ const tasks = [
    await runner.showMessageBox(`All URLs downloaded for ${mhtmlFilePath}`, "Completed");
    process.exit(0);
   } catch (err) {
-    console.error("❌ Error during scraping:", err);
+    logger.error("❌ Error during scraping:", err);
   }
 })();
