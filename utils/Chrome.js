@@ -8,6 +8,7 @@ import puppeteer from 'puppeteer';
 import puppeteerCore from 'puppeteer-core';
 import { Utils } from './Logs.js';
 import { readFileSync } from 'fs';
+import UserAgent from 'user-agents';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,6 +22,15 @@ const headlessENV = process.env.Headless?.toLowerCase() === 'true';
 export class Chromes {
 
 
+
+  static userAgent() {
+
+    const userAgent = new UserAgent([/Chrome/, { deviceCategory: 'desktop' }]);
+    logger.info(userAgent.toString());
+    logger.info(JSON.stringify(userAgent.data, null, 2));
+
+
+  }
 
 
   static runChrome() {
