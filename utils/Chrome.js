@@ -147,146 +147,105 @@ const chromeLanguages = [
     return Math.random() * (max - min) + min;
   }
 
-  static async scrapeMhtml(url, saveDir, browser) {
 
-    const Wait_Min = process.env.Wait_Min || 5;
-    const Wait_Max = process.env.Wait_Max || 30;
-    const Scroll_Count_Min = process.env.Scroll_Count_Min || 2;
-    const Scroll_Count_Max = process.env.Scroll_Count_Max || 5;
+  
+static async processUrlFiles(inputDir, outputDir,is_native, otherDir = null) {
+    const projectDir = process.cwd();
+    const profileIndexFile = path.join(projectDir, 'profile.json');
+    const Folder_Ixbrowser = process.env.Folder_Ixbrowser;
+   
+    if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 900 });
+  logger.info(`📂 Reading .url files from: ${inputDir}`);
+  logger.info(`💾 Saving MHTML files to: ${outputDir}`);
+  logger.info(`📁 Moving processed .url files to: ${otherDir}`);
 
-    logger.info(`➡️ Loading ad: ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  if (!fs.existsSync(otherDir)) fs.mkdirSync(otherDir, { recursive: true });
 
-    // Random waiting and scrolling to simulate human behavior
-    const waitTime = getRandomInt(parseInt(Wait_Min), parseInt(Wait_Max));
-    const scrollCount = getRandomInt(parseInt(Scroll_Count_Min), parseInt(Scroll_Count_Max));
+  const urlObjects = readUrlsFromDirectory(inputDir);
+  logger.info(`🔗 Found ${urlObjects.length} URLs to process`);
+  if (urlObjects.length === 0) {
+    logger.info("📭 No .url files found in the input directory");
+    return;
+  }
 
-    logger.info(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
+  
+  if (!Folder_Ixbrowser) {
+    throw new Error('Folder_Ixbrowser environment variable is required but not set');
+  }
 
-    const timePerScroll = waitTime / (scrollCount + 1);
-    const pageHeight = await page.evaluate(() => document.body.scrollHeight);
-    const viewportHeight = await page.evaluate(() => window.innerHeight);
-    const maxScroll = pageHeight - viewportHeight;
+  
+  const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
+  logger.info("📂 Browser Data directory:", browserDataPath);
+  
+  let profileDirs = [];
+  
+  if (fs.existsSync(browserDataPath)) {
+    const items = fs.readdirSync(browserDataPath, { withFileTypes: true });
+    profileDirs = items
+      .filter(item => item.isDirectory() && item.name !== 'extension')
+      .map(item => path.join(browserDataPath, item.name));
+  }
+  profileDirs = [...profileDirs];
 
-    // Initial wait before first scroll
-    await new Promise(resolve => setTimeout(resolve, timePerScroll * 1000));
+  if (profileDirs.length === 0) {
+    throw new Error('No profile directories found');
+  }
 
-    for (let i = 0; i < scrollCount; i++) {
-      const scrollPosition = getRandomInt(0, maxScroll);
-      logger.info(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
-      await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
-      const scrollDelay = getRandomFloat(0.5, 2.5);
-      await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
-    }
+  logger.info("🌐 Starting processing with profiles:", profileDirs);
 
-    const finalScrollPosition = getRandomInt(0, maxScroll);
-    logger.info(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
-    await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
-
-    // ✅ Handle phone number display
-    let phoneShown = false;
+  let currentProfileIndex = 0;
+  let globalLangIndex = 0;
+  if (fs.existsSync(profileIndexFile)) {
     try {
-      const phoneButtons = await page.$$('button[data-testid="show-phone"]');
-      for (const btn of phoneButtons) {
-        const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
-        if (visible) {
-          logger.info('📞 Found visible phone button, clicking...');
-          await btn.click();
-          await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-          logger.info('✅ Phone number displayed!');
-          phoneShown = true;
-          break;
-        }
-      }
-      phoneShown = true;
+      const profileData = JSON.parse(fs.readFileSync(profileIndexFile, 'utf8'));
+      currentProfileIndex = profileData.currentProfileIndex || 0;
+      logger.info(`🔄 Resuming from profile index: ${currentProfileIndex}`);
     } catch (err) {
-      logger.warn(`⚠️ Phone handling error: ${err.message}`);
+      logger.warn(`⚠️ Failed to read profile index file: ${err.message}`);
+    }
+  }
+
+  for (let i = 0; i < urlObjects.length; i++) {
+    const { url, filePath, fileName } = urlObjects[i];
+    logger.info(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
+
+    const {
+      success,
+      lastSavedPath,
+      currentProfileIndex: newProfileIndex,
+      globalLangIndex: newGlobalLangIndex,
+    } = await tryProfilesForUrl(
+      url,
+      outputDir,
+      profileDirs,
+      currentProfileIndex,
+      globalLangIndex,
+      i,
+      is_native
+    );
+    currentProfileIndex = newProfileIndex;
+    globalLangIndex = newGlobalLangIndex;
+    try {
+      const destinationPath = path.join(otherDir, fileName);
+      fs.renameSync(filePath, destinationPath);
+      logger.info(`➡️ Moved ${fileName} to ${otherDir}`);
+    } catch (err) {
+      logger.error(`⚠️ Failed to move ${fileName}: ${err.message}`);
     }
 
-    // Safe file naming
-    let title = await page.title();
-    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-    if (!safeName) safeName = `ad_${Date.now()}`;
-    const filePath = path.join(saveDir, `${safeName}.mhtml`);
-
-    if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
-
-    let savedPath = null;
-
-    if (phoneShown) {
-      // ✅ Save as MHTML only if phoneShown = true
-      try {
-        logger.info("🧩 Capturing MHTML snapshot...");
-        const cdp = await page.createCDPSession();
-        await cdp.send("Page.enable");
-
-        // Wait a bit to let dynamic content settle
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        try {
-          const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
-          fs.writeFileSync(filePath, data);
-          logger.info(`💾 Saved (MHTML): ${filePath}`);
-          savedPath = filePath;
-        } catch (mhtmlErr) {
-          // More specific error handling for MHTML capture
-          if (
-            mhtmlErr.message &&
-            mhtmlErr.message.includes("Protocol error (Page.captureSnapshot): Failed  to generate MHTML")
-          ) {
-            logger.error(
-              `❌ Failed to capture MHTML for ${url}: The page may contain resources or frames that prevent MHTML generation.`
-            );
-          } else {
-            logger.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
-          }
-        }
-      } catch (err) {
-        logger.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
-      }
+    if (!success) {
+      
+      logger.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
     } else {
-      logger.info("⚠️ Phone number not shown. Skipping MHTML capture.");
+      logger.info(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
     }
-
-    await page.close();
-    return { phoneShown, savedPath };
   }
 
-
-  static async scrapeUrl(url, saveDir, browser) {
-    // Check if URL already exists in any relevant directory
-    if (urlExistsInDirectories(url, saveDir)) {
-      logger.info(`⏭️  URL already exists, skipping: ${url}`);
-      return;
-    }
-
-    // Extract title from URL without loading the page
-    const urlObj = new URL(url);
-
-    let title = urlObj.pathname;
-    const urlFileContent = `[InternetShortcut]
-URL=${url}`;
-
-    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-    const filePath = path.join(saveDir, `Olx.Uz ${safeName}.url`);
-
-    // Check if file already exists in the current directory
-    if (fs.existsSync(filePath)) {
-      return;
-    }
-
-    if (!fs.existsSync(saveDir)) {
-      fs.mkdirSync(saveDir, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, urlFileContent);
-    logger.info(`💾 Saved URL file: ${filePath}`);
-  }
-
-
+  logger.info("\n🏁 All URLs processed!");
+  process.exit(0);
+}
 
   constructor(chromeVersion = process.env.CHROME_VERSION) {
     if (!chromeVersion) {
