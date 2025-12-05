@@ -20,7 +20,243 @@ const headlessENV = process.env.Headless?.toLowerCase() === 'true';
 
 export class ChromeRunner {
 
-  static async scrapeAd(url, saveDir, browser) {
+
+ static async  tryProfilesForUrl(
+  url,
+  outputDir,
+  profileDirs,
+  currentProfileIndex,
+  globalLangIndex,
+  currentSavedCount,
+  is_native
+) {
+  let success = false;
+  let lastSavedPath = null;
+  let attempts = 0;
+  let profileData = {};
+
+
+  const runner = new ChromeRunner();
+const utils = new Utils();
+const chromeLanguages = [
+  'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
+];
+
+  while (!success && attempts < profileDirs.length) {
+    const profile = profileDirs[currentProfileIndex];
+    logger.info(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const projectDir = path.resolve(__dirname, '..');
+    const profileIndexFile = path.join(projectDir, 'profile.json');
+    
+    let browser = null;
+    try {
+      const lang = chromeLanguages[globalLangIndex % chromeLanguages.length];
+      const userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop'}]);
+      
+     profileData = {
+      number: currentProfileIndex + 1,
+      currentProfileIndex,
+      profilePath: profile,
+      agent: userAgent.toString(),
+      lang:lang,
+      timestamp: new Date().toISOString(),
+    };
+
+    fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+
+        browser = await runner.run(profile,lang,userAgent.toString(),is_native);
+      const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
+      lastSavedPath = savedPath;
+      await browser.close();
+
+      if (phoneShown) {
+        logger.info(`✅ Phone shown with profile ${profile} (lang: ${lang})`);
+        success = true;
+      } else {
+        logger.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
+        await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
+
+        if (currentProfileIndex === profileDirs.length - 1) {
+          logger.error('❌ All profiles failed. Stopping process...');
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          process.exit(1);
+        }
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
+        globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
+      }
+    } catch (err) {
+      logger.error(`❌ Error with profile ${profile}: ${err.message}`);
+      // Check if this is a recoverable error
+      const isRecoverableError = err.message.includes('Target closed') || 
+                                err.message.includes('Protocol error') || 
+                                err.message.includes('Navigation failed') ||
+                                err.message.includes('net::ERR_');
+      
+      if (browser) {
+        try {
+          await browser.close();
+        } catch (closeErr) {
+          logger.warn(`⚠️ Error closing browser: ${closeErr.message}`);
+        }
+      }
+      
+      // If it's a recoverable error, try the next profile
+      if (isRecoverableError) {
+        logger.info(`🔄 Recoverable error detected. Trying next profile...`);
+        // Add a small delay to allow Chrome to fully close
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (currentProfileIndex === profileDirs.length - 1) {
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          process.exit(1);
+        }
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
+        globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
+      } else {
+        // For non-recoverable errors, exit
+        if (currentProfileIndex === profileDirs.length - 1) {
+          profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
+          fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
+          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+          process.exit(1);
+        }
+        currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
+        globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
+      }
+    }
+    attempts++;
+  }
+
+  return { success, lastSavedPath, currentProfileIndex, globalLangIndex };
+}
+
+
+
+  static getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  static getRandomFloat(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  static async scrapeMhtml(url, saveDir, browser) {
+
+    const Wait_Min = process.env.Wait_Min || 5;
+    const Wait_Max = process.env.Wait_Max || 30;
+    const Scroll_Count_Min = process.env.Scroll_Count_Min || 2;
+    const Scroll_Count_Max = process.env.Scroll_Count_Max || 5;
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 900 });
+
+    logger.info(`➡️ Loading ad: ${url}`);
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+    // Random waiting and scrolling to simulate human behavior
+    const waitTime = getRandomInt(parseInt(Wait_Min), parseInt(Wait_Max));
+    const scrollCount = getRandomInt(parseInt(Scroll_Count_Min), parseInt(Scroll_Count_Max));
+
+    logger.info(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
+
+    const timePerScroll = waitTime / (scrollCount + 1);
+    const pageHeight = await page.evaluate(() => document.body.scrollHeight);
+    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    const maxScroll = pageHeight - viewportHeight;
+
+    // Initial wait before first scroll
+    await new Promise(resolve => setTimeout(resolve, timePerScroll * 1000));
+
+    for (let i = 0; i < scrollCount; i++) {
+      const scrollPosition = getRandomInt(0, maxScroll);
+      logger.info(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
+      await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
+      const scrollDelay = getRandomFloat(0.5, 2.5);
+      await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
+    }
+
+    const finalScrollPosition = getRandomInt(0, maxScroll);
+    logger.info(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
+    await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
+
+    // ✅ Handle phone number display
+    let phoneShown = false;
+    try {
+      const phoneButtons = await page.$$('button[data-testid="show-phone"]');
+      for (const btn of phoneButtons) {
+        const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+        if (visible) {
+          logger.info('📞 Found visible phone button, clicking...');
+          await btn.click();
+          await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
+          logger.info('✅ Phone number displayed!');
+          phoneShown = true;
+          break;
+        }
+      }
+      phoneShown = true;
+    } catch (err) {
+      logger.warn(`⚠️ Phone handling error: ${err.message}`);
+    }
+
+    // Safe file naming
+    let title = await page.title();
+    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
+    if (!safeName) safeName = `ad_${Date.now()}`;
+    const filePath = path.join(saveDir, `${safeName}.mhtml`);
+
+    if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
+
+    let savedPath = null;
+
+    if (phoneShown) {
+      // ✅ Save as MHTML only if phoneShown = true
+      try {
+        logger.info("🧩 Capturing MHTML snapshot...");
+        const cdp = await page.createCDPSession();
+        await cdp.send("Page.enable");
+
+        // Wait a bit to let dynamic content settle
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        try {
+          const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
+          fs.writeFileSync(filePath, data);
+          logger.info(`💾 Saved (MHTML): ${filePath}`);
+          savedPath = filePath;
+        } catch (mhtmlErr) {
+          // More specific error handling for MHTML capture
+          if (
+            mhtmlErr.message &&
+            mhtmlErr.message.includes("Protocol error (Page.captureSnapshot): Failed  to generate MHTML")
+          ) {
+            logger.error(
+              `❌ Failed to capture MHTML for ${url}: The page may contain resources or frames that prevent MHTML generation.`
+            );
+          } else {
+            logger.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
+          }
+        }
+      } catch (err) {
+        logger.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
+      }
+    } else {
+      logger.info("⚠️ Phone number not shown. Skipping MHTML capture.");
+    }
+
+    await page.close();
+    return { phoneShown, savedPath };
+  }
+
+
+  static async scrapeUrl(url, saveDir, browser) {
     // Check if URL already exists in any relevant directory
     if (urlExistsInDirectories(url, saveDir)) {
       logger.info(`⏭️  URL already exists, skipping: ${url}`);
