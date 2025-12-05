@@ -108,16 +108,19 @@ export async function scrapeMultipleSearches(tasks) {
   logger.info("🎉 Все поиски обработаны!");
 }
 
-// 🚀 CLI for a single search
-if (process.argv.length >= 4) {
-  const url = process.argv[2];
-  const saveDir = process.argv[3];
+export async function scrapeMultipleSearchesMht(tasks) {
+  logger.info(process.env.HeadlessURL,'headlessURL');
 
-  scrapeSearch(url, saveDir)
-    .then(() => {
-      logger.info("🎉 Готово!");
-    })
-    .catch((err) => {
-      logger.error("❌ Ошибка:", err);
-    });
+ const browser = await puppeteer.launch({ //komol
+    headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
+    slowMo: 100,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  for (const { url, saveDir } of tasks) {
+    await scrapeSearch(url, saveDir, browser);
+  }
+
+  await browser.close();
+  logger.info("🎉 Все поиски обработаны!");
 }

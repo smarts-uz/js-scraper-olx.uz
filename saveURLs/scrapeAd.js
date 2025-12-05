@@ -95,3 +95,4 @@ URL=${url}`;
   fs.writeFileSync(filePath, urlFileContent);
   logger.info(`💾 Saved URL file: ${filePath}`);
 }
+

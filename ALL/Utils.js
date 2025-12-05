@@ -17,9 +17,11 @@ const envpath = path.join(__dirname, '..', '.env');
 
 dotenv.config({ path: envpath });
 
+
+/* 
 const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: true });
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
-
+ */
 
 export class Utils {
     constructor() {

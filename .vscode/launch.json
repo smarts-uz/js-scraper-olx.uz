@@ -8,14 +8,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "tests",
+      "name": "saveURL hisense",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\testing.js",
+      "program": "${workspaceFolder}\\saveURL.js",
       "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\External\\KOGON YO`L TA`MIR QURILISH\\ALL.contract"
+        "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
       ],
       "console": "integratedTerminal"
     },
