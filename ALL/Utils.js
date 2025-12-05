@@ -83,7 +83,7 @@ export class Utils {
     }
 
     async sendTelegramMessage(message) {
-        await bot.sendMessage(ADMIN_CHAT_ID, message);
+       //  await bot.sendMessage(ADMIN_CHAT_ID, message);
     }
 
     findRawPathInTxtFiles(rawPath) {
