@@ -3,7 +3,7 @@ import path from 'path';
 import { readUrlsFromDirectory } from './utils.js';
 import { tryProfilesForUrl } from './profileSwitcher.js';
 import { fileURLToPath } from 'url';
-import { Utils } from '../ALL/Utils.js';
+import { Utils } from '../utils/Logs.js';
 
 const logger = new Utils().log;
 

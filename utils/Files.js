@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { Utils } from '../ALL/Utils.js';
+import { Utils } from './Logs.js';
 
 const logger = new Utils().log;
 
@@ -62,37 +62,3 @@ function urlExistsInDirectories(url, currentSaveDir) {
   
   return false;
 }
-
-/**
- * Scrapes an ad from a URL and saves it as a .url file
- */
-export async function scrapeAd(url, saveDir, browser) {
-  // Check if URL already exists in any relevant directory
-  if (urlExistsInDirectories(url, saveDir)) {
-    logger.info(`⏭️  URL already exists, skipping: ${url}`);
-    return;
-  }
-
-  // Extract title from URL without loading the page
-  const urlObj = new URL(url);
-  
-  let title = urlObj.pathname;  
-  const urlFileContent = `[InternetShortcut]
-URL=${url}`;
-
-  let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-  const filePath = path.join(saveDir, `Olx.Uz ${safeName}.url`);
-
-  // Check if file already exists in the current directory
-  if (fs.existsSync(filePath)) {
-    return;
-  }
-
-  if (!fs.existsSync(saveDir)) {
-    fs.mkdirSync(saveDir, { recursive: true });
-  }
-
-  fs.writeFileSync(filePath, urlFileContent);
-  logger.info(`💾 Saved URL file: ${filePath}`);
-}
-

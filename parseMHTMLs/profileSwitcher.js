@@ -2,8 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { scrapeAd } from './scrapeAd.js';
-import { ChromeRunner } from '../ALL/ChromeRunner.js';
-import { Utils } from '../ALL/Utils.js';
+import { ChromeRunner } from '../utils/Chrome.js';
+import { Utils } from '../utils/Logs.js';
 import UserAgent from 'user-agents';
 import { fileURLToPath } from 'url';
 
