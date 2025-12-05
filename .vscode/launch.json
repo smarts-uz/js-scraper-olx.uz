@@ -17,269 +17,28 @@
         "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
       ],
       "console": "integratedTerminal"
-    },
-    {
+    }, {
       "type": "node",
       "request": "launch",
-      "name": "yamls zokirov",
+      "name": "saveMHTML hisense",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\yamls.js",
+      "program": "${workspaceFolder}\\saveMHTML.js",
       "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ZOKIROV CONSTRUCTION\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "yamls ALL",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\yamls.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ALL.contractall"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "yamls ALL Saodat",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\yamls.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\Saodats\\ALL.contractall"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "yamls SHUANGTA",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\yamls.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\ErdunShi\\AETHERIS\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "yamls suvprom",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\yamls.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\SUVPROM DRILLER\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "yamls GLOBALMACH",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\yamls.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\ErdunShi\\GLOBALMACH GROUP\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "update ALL AnvarIkr",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\update.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ALL.contractall"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "update ZOKIROV",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\update.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ZOKIROV CONSTRUCTION\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "update KOGON",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\update.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\External\\KOGON YO`L TA`MIR QURILISH\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "words ZOKIROV",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\words.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ZOKIROV CONSTRUCTION\\ALL.contract",
+        "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
       ],
       "console": "integratedTerminal"
     },{
       "type": "node",
       "request": "launch",
-      "name": "words COLONIUM",
+      "name": "saveMHTMLIx hisense",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}\\words.js",
+      "program": "${workspaceFolder}\\saveMHTMLIx.js",
       "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\Founder\\THE COLONIUM\\ALL.contract",
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "words ALL AnvarIkr",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\words.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ALL.contractall",
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "words ALL Saodat",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\words.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\Saodats\\ALL.contractall",
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels Colonium",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\excels.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\Founder\\THE COLONIUM\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels APEX",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\excels.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\ErdunShi\\APEX MOBILITY\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels SUVPROM",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\excels.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\SUVPROM DRILLER\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels ISTS",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\excels.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\External\\ISTS\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels AET",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "d:\\FileType\\Office\\Develop\\DOC\\Word.Application\\JS winax\\Sources\\js-winax-contract\\excels.js",
-      "args": [
-        "--yaml",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\ErdunShi\\AETHERIS\\ALL.contract"
-      ],
-      "console": "integratedTerminal"
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "excels ALL",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}\\excels.js",
-      "args": [
-        "--all",
-        "d:\\FSystem\\ALL\\Humans\\Rentalls\\AnvarIkr\\ALL.contractall"
+        "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
       ],
       "console": "integratedTerminal"
     },
