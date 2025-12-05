@@ -11,7 +11,7 @@ export class Puppe {
   /**
    * Saves all ads from a search page, including pagination
    */
-  export async static scrapeSearch(searchUrl, saveDir, browser = null) {
+  static async scrapeSearch(searchUrl, saveDir, browser = null) {
 
     let localBrowser = browser;
     let adsCount = 0;
@@ -91,7 +91,7 @@ export class Puppe {
   /**
    * Accepts an array of searches and saves all ads
    */
-  export async static scrapeMultipleSearches(tasks) {
+  static async scrapeMultipleSearches(tasks) {
     logger.info(process.env.HeadlessURL, 'headlessURL');
 
     const browser = await puppeteer.launch({ //komol
@@ -108,7 +108,7 @@ export class Puppe {
     logger.info("🎉 Все поиски обработаны!");
   }
 
-  export async static scrapeMultipleSearchesMht(tasks) {
+  static async scrapeMultipleSearchesMht(tasks) {
     logger.info(process.env.HeadlessURL, 'headlessURL');
 
     const browser = await puppeteer.launch({ //komol

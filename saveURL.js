@@ -1,9 +1,8 @@
-import { scrapeMultipleSearches } from "./saveURLs/parseUrl.js";
+import { Puppe } from "./utils/Puppe.js";
 import fs from "fs";
 import path from "path";
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
-import { Utils } from './utils/Logs.js';
 
 const logger = new Utils().log;
 
@@ -77,7 +76,7 @@ const tasks = [
 
 (async () => {
   try {
-    await scrapeMultipleSearches(tasks);
+    await Puppe.scrapeMultipleSearches(tasks);
    await runner.showMessageBox(`All URLs downloaded for ${mhtmlFilePath}`, "Completed");
    process.exit(0);
   } catch (err) {

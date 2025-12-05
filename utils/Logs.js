@@ -9,15 +9,6 @@ import bunyan from "bunyan";
 import RotatingFileStream from 'bunyan-rotating-file-stream';
 
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const envpath = path.join(__dirname, '..', '.env');
-
-dotenv.config({ path: envpath });
-
-
 export class Logs {
     constructor() {
         // Agar oldin yaratilgan bo‘lsa, o‘shani qaytar
