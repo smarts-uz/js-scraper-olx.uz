@@ -102,16 +102,15 @@ export class Puppe {
       console.info('href', href);
 
 
-      let match = href.match(/(https?:\/\/.*\/list\/user\/([^\/]+)\/?)/);
-      match = match ? decodeURIComponent(match[1]) : null;
+      let match = href.match(/\/list\/user\/([^.]+?)\//);
       console.info('match User', match);
 
       if (!match) {
-        match = href.match(/(https?:\/\/([^.]+)\.olx\.uz)/);;   // → "bitovayatexnikalg"
+        match = href.match(/https?:\/\/([^.]+)\.olx\.uz/);;   // → "bitovayatexnikalg"
         console.info("match Host:", match);
       }
 
-      return match;
+      return { href, match }; // regex match is an array of strings or null
 
     }).catch(() => {
       console.warn('No user ID found');
