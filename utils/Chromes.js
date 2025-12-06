@@ -22,16 +22,16 @@ export class Chromes {
 
     globalThis.mhtmlDir = path.dirname(globalThis.mhtmlFile);
     console.info(globalThis.mhtmlDir, 'mhtmlDir globalThis');
-    
+
     globalThis.mhtmlPageDir = path.join(globalThis.mhtmlDir, 'Page');
     console.info(globalThis.mhtmlPageDir, 'mhtmlPageDir globalThis');
-    
+
     globalThis.mhtmlPageDirAllJson = path.join(globalThis.mhtmlPageDir, 'ALL.json');
     console.info(globalThis.mhtmlPageDirAllJson, 'mhtmlPageDirAllJson globalThis');
-    
+
     globalThis.mhtmlDataDir = path.join(globalThis.mhtmlDir, 'Data');
     console.info(globalThis.mhtmlDataDir, 'mhtmlDataDir globalThis');
-    
+
     globalThis.mhtmlDataDirAllJson = path.join(globalThis.mhtmlDataDir, 'ALL.json');
     console.info(globalThis.mhtmlDataDirAllJson, 'mhtmlDataDirAllJson globalThis');
 
@@ -225,6 +225,16 @@ export class Chromes {
   }
 
 
+
+  static saveUrlFile(filePath, url) {
+
+    const urlFileContent = `[InternetShortcut]
+URL=${url}`;
+    console.log(`Saving URL to file: ${filePath}. URL: ${url}`);
+
+    fs.writeFileSync(filePath, urlFileContent);
+
+    }
 
   static getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;

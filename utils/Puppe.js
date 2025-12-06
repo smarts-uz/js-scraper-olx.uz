@@ -120,11 +120,8 @@ export class Puppe {
     console.info('matches', matches);
     let { href, match } = matches
 
-    // matches { href: '/list/user/b6vcO/', match: [ '/list/user/b6vcO/', 'b6vcO' ] }
-    // https://www.olx.uz/list/user/b6vcO/
-    /// https://www.olx.uz
     if (!href.includes('https://'))
-      href = `https:/${href}`
+      href = `https://olx.uz${href}`
 
 
     if (match && match.length > 0) {
@@ -134,16 +131,6 @@ export class Puppe {
 
     const returns = { href, match }
     console.info('returns', returns);
-
-
-    /*
-    matches {
-  href: 'https://bitovayatexnikalg.olx.uz/home/',
-  match: [ 'https://bitovayatexnikalg.olx.uz', 'bitovayatexnikalg' ]
-}
-    */
-
-
 
     return returns;
 
@@ -255,10 +242,9 @@ export class Puppe {
     await Puppe.autoScroll(page, 1000, 5);
     console.info(`domcontentloaded`);
 
-    const userId = await Puppe.extractUserId(page);
-    console.log(`User ID: ${userId}`);
+    const { href, match } = await Puppe.extractUserId(page);
 
-    if (!userId)
+    if (!match)
       Dialogs.warningBox(
         `⚠️ Failed to extract user ID from ${url}. Please check the URL and try again.`
       );
@@ -267,7 +253,7 @@ export class Puppe {
     const safeName = await Puppe.pageTitle(page);
     console.info(`Safe Name: ${safeName}`);
 
-    const userIdPath = path.join(globalThis.saveDir, userId);
+    const userIdPath = path.join(globalThis.saveDir, match);
     console.info(`User ID Path: ${userIdPath}`);
 
     if (!fs.existsSync(userIdPath)) {
@@ -279,6 +265,8 @@ export class Puppe {
 
     }
 
+    const filePathURL = path.join(userIdPath, `ALL User.url`);
+    Chromes.saveUrlFile(filePathURL, href);
 
     const filePathMhtml = path.join(userIdPath, `${safeName}.mhtml`);
     await Puppe.saveAsMhtml(page, filePathMhtml);
@@ -346,42 +334,11 @@ export class Puppe {
     // Safe file naming
     let title = await page.title();
     let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-    if (!safeName) safeName = `ad_${Date.now()}`;
+    if (!safeName) safeName = `OLX ${Date.now()}`;
     console.info(`💾 safeName: ${safeName}`);
     return safeName;
   }
 
-
-
-  static async scrapeUrl(browser, url, saveDir) {
-    // Check if URL already exists in any relevant directory
-    if (Files.urlExistsInDirectories(url, saveDir)) {
-      console.info(`⏭️  URL already exists, skipping: ${url}`);
-      return;
-    }
-
-    // Extract title from URL without loading the page
-    const urlObj = new URL(url);
-
-    let title = urlObj.pathname;
-    const urlFileContent = `[InternetShortcut]
-URL=${url}`;
-
-    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-    const filePath = path.join(saveDir, `Olx.Uz ${safeName}.url`);
-
-    // Check if file already exists in the current directory
-    if (fs.existsSync(filePath)) {
-      return;
-    }
-
-    if (!fs.existsSync(saveDir)) {
-      fs.mkdirSync(saveDir, { recursive: true });
-    }
-
-    fs.writeFileSync(filePath, urlFileContent);
-    console.info(`💾 Saved URL file: ${filePath}`);
-  }
 
   static async scrollAds(page) {
 
