@@ -124,7 +124,7 @@ export class Puppe {
             clearInterval(timer);
             resolve();
           }
-        }, 300);
+        }, 10);
       });
     });
   }
@@ -439,6 +439,7 @@ URL=${url}`;
       }
     });
 
+    console.info("paginationUrls:", paginationUrls);
     console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
 
     await mainPage.close();

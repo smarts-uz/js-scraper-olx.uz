@@ -35,10 +35,7 @@ async function main() {
 
     const paginationUrls = await Puppe.getPaginationUrls(browser, url, saveDir);
   
-
-        
-
-
+  
 
 }
 
