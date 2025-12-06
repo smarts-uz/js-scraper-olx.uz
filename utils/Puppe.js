@@ -210,15 +210,17 @@ export class Puppe {
   }
 
 
-  static async scrapeMhtml(browser, url, saveDir, showPhone = false) {
+  static async scrapeOlxMhtml(url, saveDir, showPhone = false, browser = null) {
+
+    if (!browser)
+      browser = await Puppe.runChrome(process.env.Headless === 'true');
 
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
-    
-    console.info(`➡️ Loading ad: ${url}`);
+    console.info(`➡️ Loading Olx Post: ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-    
+
     await Puppe.autoScroll(page);
     console.info(`domcontentloaded`);
 
@@ -229,6 +231,54 @@ export class Puppe {
       const phone = await Puppe.showPhone(page);
       console.info(`Phone: ${phone}`);
     }
+
+    const safeName = await Puppe.pageTitle(page);
+
+    const filePath = path.join(saveDir, `${safeName}.mhtml`);
+    await Puppe.saveAsMhtml(page, filePath);
+
+    await page.close();
+    return filePath
+  }
+
+
+  static async saveAllPages(mhtmlFile, browser = null) {
+
+    if (!browser)
+      browser = await Puppe.runChrome(process.env.Headless === 'true');
+
+
+    Chromes.initFolders(mhtmlFile);
+
+    console.info(globalThis.mhtmlPageDirAllJson, 'mhtmlPageDirAllJson globalThis');
+
+    // read this json. globalThis.mhtmlPageDirAllJson iterate through all pages and save them as mhtml files
+
+    if (fs.existsSync(globalThis.mhtmlPageDirAllJson)) {
+
+      const mhtmlPageDirAllJson = JSON.parse(fs.readFileSync(globalThis.mhtmlPageDirAllJson, 'utf8'));
+      for (const pageUrl of mhtmlPageDirAllJson) {
+        console.info(`➡️ Loading Olx Post: ${pageUrl}`);
+        await Puppe.scrapeCatalogMhtml(pageUrl, globalThis.mhtmlPageDir, browser);
+      }
+    }
+
+  }
+
+
+  static async scrapeCatalogMhtml(url, saveDir, browser = null) {
+
+    if (!browser)
+      browser = await Puppe.runChrome(process.env.Headless === 'true');
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 900 });
+
+    console.info(`➡️ Loading Catalog: ${url}`);
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+    await Puppe.autoScroll(page);
+    console.info(`domcontentloaded`);
 
     const safeName = await Puppe.pageTitle(page);
 
