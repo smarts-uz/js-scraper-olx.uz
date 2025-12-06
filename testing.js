@@ -33,11 +33,11 @@ async function main() {
 
     let browser = await Puppe.runChrome(process.env.Headless === 'true');
 
-  //  await Puppe.saveAllPages(mhtmlFile, browser);
+    //  await Puppe.saveAllPages(mhtmlFile, browser);
 
     let adUrl = 'https://www.olx.uz/tashkent/q-hisense/?currency=UYE&page=2&search%5Bfilter_enum_state%5D%5B0%5D=new&search%5Border%5D=filter_float_price%3Adesc'
 
-   await Puppe.scrapeCatalogMhtml(adUrl, globalThis.mhtmlPageDir, false);
+    await Puppe.scrapeCatalogMhtml(adUrl, browser);
 
 }
 

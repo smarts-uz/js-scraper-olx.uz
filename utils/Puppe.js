@@ -216,14 +216,14 @@ export class Puppe {
 
       for (const pageUrl of mhtmlPageDirAllJson) {
         console.info(`➡️ Loading Olx Post: ${pageUrl}`);
-        await Puppe.scrapeCatalogMhtml(pageUrl, globalThis.mhtmlPageDir, browser);
+        await Puppe.scrapeCatalogMhtml(pageUrl, browser);
       }
     }
 
   }
 
 
-  static async scrapeCatalogMhtml(url, saveDir, browser = null) {
+  static async scrapeCatalogMhtml(url, browser = null) {
 
     if (!browser)
       browser = await Puppe.runChrome(process.env.Headless === 'true');
@@ -242,11 +242,13 @@ export class Puppe {
     let adLinks = await Puppe.scrapeSearch(page)
     console.info(`adLinks`, adLinks)
 
-    const filePath = path.join(saveDir, `${safeName}.mhtml`);
-    await Puppe.saveAsMhtml(page, filePath);
+    const filePathJson = path.join(globalThis.mhtmlDataDir, `${safeName}.json`);
+    Files.writeJson(filePathJson, adLinks)
+
+    const filePathMhtml = path.join(globalThis.mhtmlPageDir, `${safeName}.mhtml`);
+    await Puppe.saveAsMhtml(page, filePathMhtml);
 
     await page.close();
-    return filePath
   }
 
 
@@ -481,17 +483,7 @@ URL=${url}`;
 
     // save paginationUrls to file as json to 
 
-    const jsonPaginationUrls = JSON.stringify(uniqueUrls, null, 2);
-    console.info("paginationUrls:", jsonPaginationUrls);
-
-    // save using fs. dont use Files
-    await fs.writeFile(globalThis.mhtmlPageDirAllJson, jsonPaginationUrls, (err) => {
-      if (err) {
-        console.error("❌ Ошибка при записи файла:", err);
-      } else {
-        console.info("✅ JSON-файл успешно записан.");
-      }
-    });
+    Files.writeJson(globalThis.mhtmlPageDirAllJson, uniqueUrls)
 
     return uniqueUrls;
 

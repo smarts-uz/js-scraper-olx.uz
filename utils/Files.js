@@ -482,6 +482,23 @@ export class Files {
   }
 
 
+  static async writeJson(filePath, data) {
+
+    const jsonData = JSON.stringify(data, null, 2);
+    console.info("jsonData:", jsonData);
+
+    // save using fs. dont use Files
+    await fs.writeFile(filePath, jsonData, (err) => {
+      if (err) {
+        console.error("❌ Ошибка при записи файла:", err);
+        return false
+      } else {
+        console.info("✅ JSON-файл успешно записан.");
+        return true
+      }
+    });
+  }
+
   static saveInfoToFile(folder, filename) {
 
     if (Files.isEmpty(filename))
