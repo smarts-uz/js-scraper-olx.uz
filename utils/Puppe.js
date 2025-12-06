@@ -147,62 +147,44 @@ export class Puppe {
   }
 
 
-  static async scrapeMhtml(browser, url, saveDir, isPhone = false) {
+  static async showPhone(page) {
+    // await Puppe.scrollAds(page);
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 900 });
-
-    console.info(`➡️ Loading ad: ${url}`);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-
-    const userId = await Puppe.extractUserIdWithRegex(page);
-    console.log(`User ID: ${userId}`);
-
-
-    if (isPhone) {
-
-      await Puppe.scrollAds(page);
-
-      // ✅ Handle phone number display
-      try {
-        const phoneButtons = await page.$$('button[data-testid="show-phone"]');
-        for (const btn of phoneButtons) {
-          const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
-          if (visible) {
-            console.info('📞 Found visible phone button, clicking...');
-            await btn.click();
-            await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-            console.info('✅ Phone number displayed!');
-            phoneShown = true;
-            break;
-          }
+    // ✅ Handle phone number display\
+    let phone;
+    try {
+      const phoneButtons = await page.$$('button[data-testid="show-phone"]');
+      for (const btn of phoneButtons) {
+        const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
+        if (visible) {
+          console.info('📞 Found visible phone button, clicking...');
+          await btn.click();
+          await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
+          phone = await page.$eval(
+            'a[data-testid="contact-phone"]',
+            el => el.getAttribute("href").replace("tel:", "")
+          );
+          console.info('✅ Phone number displayed!', phone);
+          break;
         }
-      } catch (err) {
-        console.warn(`⚠️ Phone handling error: ${err.message}`);
       }
-
+    } catch (err) {
+      console.warn(`⚠️ Phone handling error: ${err.message}`);
     }
 
+    return phone;
 
-    // Safe file naming
-    let title = await page.title();
-    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
-    if (!safeName) safeName = `ad_${Date.now()}`;
-
-    const filePath = path.join(saveDir, `${safeName}.mhtml`);
-
-    if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
-
-    let savedPath = null;
+  }
 
 
+  static async saveAsMhtml(page, filePath) {
     try {
       console.info("🧩 Capturing MHTML snapshot...");
       const cdp = await page.createCDPSession();
       await cdp.send("Page.enable");
 
       // Wait a bit to let dynamic content settle
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       try {
         const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
@@ -216,21 +198,53 @@ export class Puppe {
           mhtmlErr.message.includes("Protocol error (Page.captureSnapshot): Failed  to generate MHTML")
         ) {
           console.error(
-            `❌ Failed to capture MHTML for ${url}: The page may contain resources or frames that prevent MHTML generation.`
+            `❌ Failed to capture MHTML for ${page.url()}: The page may contain resources or frames that prevent MHTML generation.`
           );
         } else {
-          console.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
+          console.error(`â ï¸ Failed to capture MHTML for ${page.url()}: ${mhtmlErr.message}`);
         }
       }
     } catch (err) {
-      console.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
+      console.error(`⚠️ Unexpected error during MHTML capture for ${page.url()}: ${err.message}`);
     }
-
-    await page.close();
-    return savedPath
   }
 
 
+  static async scrapeMhtml(browser, url, saveDir, showPhone = false) {
+
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 900 });
+
+    console.info(`➡️ Loading ad: ${url}`);
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+    const userId = await Puppe.extractUserIdWithRegex(page);
+    console.log(`User ID: ${userId}`);
+
+    if (showPhone) {
+      const phone = await Puppe.showPhone(page);
+      console.info(`Phone: ${phone}`);
+    }
+
+    const safeName = await Puppe.pageTitle(page);
+
+    const filePath = path.join(saveDir, `${safeName}.mhtml`);
+    await Puppe.saveAsMhtml(page, filePath);
+
+    await page.close();
+    return filePath
+  }
+
+
+
+  static async pageTitle(page) {
+    // Safe file naming
+    let title = await page.title();
+    let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
+    if (!safeName) safeName = `ad_${Date.now()}`;
+    console.info(`💾 safeName: ${safeName}`);
+    return safeName;
+  }
 
 
 
@@ -300,9 +314,10 @@ URL=${url}`;
 
   }
 
-  static async getPaginationUrls(searchUrl) {
+  static async getPaginationUrls(searchUrl, browser = null) {
 
-    const browser = await Puppe.runChrome(process.env.Headless === 'true');
+    if (!browser)
+      browser = await Puppe.runChrome(process.env.Headless === 'true');
 
     // Получаем все страницы пагинации
     const mainPage = await browser.newPage();
@@ -446,12 +461,12 @@ URL=${url}`;
     });
 
     console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
-    
+
     await mainPage.close();
     await browser.close();
-    
+
     // save paginationUrls to file as json to 
-    
+
     const jsonPaginationUrls = JSON.stringify(uniqueUrls, null, 2);
     console.info("paginationUrls:", jsonPaginationUrls);
 
@@ -463,7 +478,7 @@ URL=${url}`;
         console.info("✅ JSON-файл успешно записан.");
       }
     });
-    
+
     return uniqueUrls;
 
   }
