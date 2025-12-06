@@ -26,10 +26,10 @@ export class Puppe {
     await mainPage.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     // Прокручиваем вниз для загрузки пагинации
-    await autoScroll(mainPage);
-    await sleep(2000); // Ждём загрузку элементов
+    await Puppe.autoScroll(mainPage);
+    await Puppe.sleep(2000); // Ждём загрузку элементов
 
-    const paginationUrls = await getPaginationUrls(mainPage);
+    const paginationUrls = await Puppe.getPaginationUrls(mainPage);
     await mainPage.close();
 
     console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
@@ -53,7 +53,7 @@ export class Puppe {
       await page.setViewport({ width: 1280, height: 900 });
 
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await autoScroll(page);
+      await Puppe.autoScroll(page);
 
       let adLinks = await page.$$eval(
         'a[href*="/obyavlenie/"], a[href*="/offer/"]',
@@ -75,7 +75,7 @@ export class Puppe {
       // Обрабатываем каждое объявление
       for (const adUrl of adLinks) {
         adsCount++;
-        await scrapeAd(adUrl, saveDir, localBrowser);
+        await Puppe.scrapeUrl(adUrl, saveDir, localBrowser);
       }
 
       // Делаем паузу между страницами
