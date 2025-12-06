@@ -1,9 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { Utils } from './Logs.js';
 
 
-class files {
+export class Files {
   constructor(parameters) {
 
   }
@@ -65,43 +64,43 @@ class files {
       .filter(l => l.length > 0);
   }
 
-/**
- * Checks if a URL already exists in any relevant directory
- * @param {string} url - The URL to check
- * @param {string} currentSaveDir - The current save directory to exclude from checking
- * @returns {boolean} - True if URL exists, false otherwise
- */
-function urlExistsInDirectories(url, currentSaveDir) {
-  const directories = findRelevantDirectories(currentSaveDir);
-  // Check each directory
-  for (const dir of directories) {
-    // Skip the current save directory
-    if (path.resolve(dir) === path.resolve(currentSaveDir)) continue;
+  /**
+   * Checks if a URL already exists in any relevant directory
+   * @param {string} url - The URL to check
+   * @param {string} currentSaveDir - The current save directory to exclude from checking
+   * @returns {boolean} - True if URL exists, false otherwise
+   */
+  static urlExistsInDirectories(url, currentSaveDir) {
+    const directories = findRelevantDirectories(currentSaveDir);
+    // Check each directory
+    for (const dir of directories) {
+      // Skip the current save directory
+      if (path.resolve(dir) === path.resolve(currentSaveDir)) continue;
 
-    try {
-      if (fs.existsSync(dir)) {
-        const files = fs.readdirSync(dir);
-        for (const file of files) {
-          if (path.extname(file).toLowerCase() === '.url') {
-            const filePath = path.join(dir, file);
-            try {
-              const content = fs.readFileSync(filePath, 'utf8');
-              // Check for exact URL match
-              if (content.includes(`URL=${url}`)) {
-                return true;
+      try {
+        if (fs.existsSync(dir)) {
+          const files = fs.readdirSync(dir);
+          for (const file of files) {
+            if (path.extname(file).toLowerCase() === '.url') {
+              const filePath = path.join(dir, file);
+              try {
+                const content = fs.readFileSync(filePath, 'utf8');
+                // Check for exact URL match
+                if (content.includes(`URL=${url}`)) {
+                  return true;
+                }
+              } catch (err) {
+                console.warn(`⚠️  Could not read file: ${filePath}`);
               }
-            } catch (err) {
-              console.warn(`⚠️  Could not read file: ${filePath}`);
             }
           }
         }
+      } catch (err) {
+        console.warn(`⚠️  Could not access directory: ${dir}`);
       }
-    } catch (err) {
-      console.warn(`⚠️  Could not access directory: ${dir}`);
     }
-  }
 
-  return false;
-}
+    return false;
+  }
 
 }

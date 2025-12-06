@@ -1,5 +1,6 @@
 
 import puppeteer from "puppeteer";
+import { Files } from "./Files.js";
 
 
 export class Puppe {
@@ -263,7 +264,7 @@ export class Puppe {
 
   static async scrapeUrl(url, saveDir, browser) {
     // Check if URL already exists in any relevant directory
-    if (urlExistsInDirectories(url, saveDir)) {
+    if (Files.urlExistsInDirectories(url, saveDir)) {
       console.info(`⏭️  URL already exists, skipping: ${url}`);
       return;
     }
