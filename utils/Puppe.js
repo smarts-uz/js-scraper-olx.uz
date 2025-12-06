@@ -22,7 +22,7 @@ export class Puppe {
 
 
     const paginationUrls = await Puppe.getPaginationUrls(browser);
-  
+
 
 
     // Если пагинация не найдена, обрабатываем только первую страницу
@@ -111,23 +111,28 @@ export class Puppe {
   /**
    * Auto scroll static
    */
-  static async autoScroll(page) {
-    await page.evaluate(async () => {
-      await new Promise((resolve) => {
-        let totalHeight = 0;
-        const distance = 400;
-        const timer = setInterval(() => {
-          const scrollHeight = document.body.scrollHeight;
-          window.scrollBy(0, distance);
-          totalHeight += distance;
-          if (totalHeight >= scrollHeight - window.innerHeight) {
-            clearInterval(timer);
-            resolve();
-          }
-        }, 10);
-      });
-    });
+
+  static async autoScroll(page, distance = 400, setIntervalTime = 10) {
+    await page.evaluate(
+      async ({ distance, setIntervalTime }) => {
+        await new Promise((resolve) => {
+          let totalHeight = 0;
+          const timer = setInterval(() => {
+            const scrollHeight = document.body.scrollHeight;
+            window.scrollBy(0, distance);
+            totalHeight += distance;
+
+            if (totalHeight >= scrollHeight - window.innerHeight) {
+              clearInterval(timer);
+              resolve();
+            }
+          }, setIntervalTime);
+        });
+      },
+      { distance, setIntervalTime } // <-- paramlar browserga uzatilyapti
+    );
   }
+
 
 
   static async extractUserIdWithRegex(page, selector = 'a[data-testid="user-profile-link"]') {
@@ -305,9 +310,7 @@ URL=${url}`;
     await mainPage.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     // Прокручиваем вниз для загрузки пагинации
-    await Puppe.autoScroll(mainPage);
-    //   await Puppe.sleep(2000); // Ждём загрузку элементов
-
+    await Puppe.autoScroll(mainPage, 1000, 5);
 
     // Wait for pagination elements to load
     await mainPage.waitForSelector('ul.pagination-list', { timeout: 10000 }).catch(() => { });
@@ -320,13 +323,11 @@ URL=${url}`;
       }
     });
 
-    // Add multiple delays and scroll attempts to ensure dynamic content loads
-    await Puppe.sleep(1000);
 
     // Try to click "next" button multiple times to load all pagination links
     let clicked = true;
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 200;
 
     while (clicked && attempts < maxAttempts) {
       clicked = await mainPage.evaluate(() => {
@@ -341,7 +342,7 @@ URL=${url}`;
       });
 
       if (clicked) {
-        await Puppe.sleep(1500); // Wait for page to load
+        //   await Puppe.sleep(1500); // Wait for page to load
         attempts++;
       }
     }
@@ -350,7 +351,7 @@ URL=${url}`;
     await mainPage.evaluate(() => {
       window.scrollTo(0, 0);
     });
-    await Puppe.sleep(1000);
+    //   await Puppe.sleep(1000);
 
     // Get maximum page number from data-testid attributes
     const maxPageNumber = await mainPage.evaluate(() => {
@@ -372,6 +373,9 @@ URL=${url}`;
 
     // Generate pagination URLs based on page numbers
     const paginationUrls = [];
+    // add serachurl to paginationUrls
+    paginationUrls.push(searchUrl);
+
     if (maxPageNumber > 0) {
       const currentUrl = mainPage.url();
       const urlObj = new URL(currentUrl);
