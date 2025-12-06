@@ -445,11 +445,25 @@ URL=${url}`;
       }
     });
 
-    console.info("paginationUrls:", paginationUrls);
     console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
-
+    
     await mainPage.close();
     await browser.close();
+    
+    // save paginationUrls to file as json to 
+    
+    const jsonPaginationUrls = JSON.stringify(uniqueUrls, null, 2);
+    console.info("paginationUrls:", jsonPaginationUrls);
+
+    // save using fs. dont use Files
+    await fs.writeFile(globalThis.mhtmlPageDirAllJson, jsonPaginationUrls, (err) => {
+      if (err) {
+        console.error("❌ Ошибка при записи файла:", err);
+      } else {
+        console.info("✅ JSON-файл успешно записан.");
+      }
+    });
+    
     return uniqueUrls;
 
   }

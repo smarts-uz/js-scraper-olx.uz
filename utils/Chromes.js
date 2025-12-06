@@ -5,10 +5,52 @@ import { existsSync } from 'fs';
 import puppeteer from 'puppeteer';
 import puppeteerCore from 'puppeteer-core';
 import UserAgent from 'user-agents';
+import { readFileSync } from 'fs';
+import { Files } from './Files.js';
 
 
 export class Chromes {
 
+
+  static initFolders(mhtmlFile) {
+
+    globalThis.mhtmlFile = mhtmlFile;
+    console.info(globalThis.mhtmlFile, 'mhtmlFile globalThis');
+
+    globalThis.mhtmlUrl = Chromes.getUrlFromMht(globalThis.mhtmlFile);
+    console.info(globalThis.mhtmlUrl, 'mhtmlUrl globalThis');
+
+    globalThis.mhtmlDir = path.dirname(globalThis.mhtmlFile);
+    console.info(globalThis.mhtmlDir, 'mhtmlDir globalThis');
+    
+    globalThis.mhtmlPageDir = path.join(globalThis.mhtmlDir, 'Page');
+    console.info(globalThis.mhtmlPageDir, 'mhtmlPageDir globalThis');
+    
+    globalThis.mhtmlPageDirAllJson = path.join(globalThis.mhtmlPageDir, 'ALL.json');
+    console.info(globalThis.mhtmlPageDirAllJson, 'mhtmlPageDirAllJson globalThis');
+    
+    globalThis.mhtmlDataDir = path.join(globalThis.mhtmlDir, 'Data');
+    console.info(globalThis.mhtmlDataDir, 'mhtmlDataDir globalThis');
+    
+    globalThis.mhtmlDataDirAllJson = path.join(globalThis.mhtmlDataDir, 'ALL.json');
+    console.info(globalThis.mhtmlDataDirAllJson, 'mhtmlDataDirAllJson globalThis');
+
+    globalThis.mhtmlParentDir = path.dirname(globalThis.mhtmlDir);
+    console.info(globalThis.mhtmlParentDir, 'mhtmlParentDir globalThis');
+
+    globalThis.mhtmlFolderName = path.basename(globalThis.mhtmlDir);
+    console.info(globalThis.mhtmlFolderName, 'mhtmlFolderName globalThis');
+
+    if (globalThis.mhtmlFolderName === '- Theory') {
+      // Place 'App' beside 'Theory'
+      globalThis.saveDir = globalThis.mhtmlParentDir;
+    } else {
+      // Place 'App' inside the same directory as the MHTML file
+      globalThis.saveDir = globalThis.mhtmlDir;
+    }
+    console.info(globalThis.saveDir, 'saveDir globalThis');
+
+  }
 
 
   static userAgent() {

@@ -66,25 +66,6 @@ export class Files {
       .filter(l => l.length > 0);
   }
 
-  static saveDirByMhtml(mhtmlFilePath) {
-    
-    const mhtmlDir = path.dirname(mhtmlFilePath);
-    const mhtmlParentDir = path.dirname(mhtmlDir);
-    const mhtmlFolderName = path.basename(mhtmlDir);
-
-    let saveDir;
-    if (mhtmlFolderName === '- Theory') {
-      // Place 'App' beside 'Theory'
-      saveDir = mhtmlParentDir;
-    } else {
-      // Place 'App' inside the same directory as the MHTML file
-      saveDir = mhtmlDir;
-    }
-
-    console.log(`Save directory: ${saveDir}`);
-
-    return saveDir;
-  }
 
   /**
    * Checks if a URL already exists in any relevant directory

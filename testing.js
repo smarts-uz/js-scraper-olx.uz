@@ -27,12 +27,9 @@ async function main() {
     let mhtmlFile = argv.mhtml;
     console.log('mhtmlFile:', mhtmlFile)
 
-    let url = Chromes.getUrlFromMht(mhtmlFile);
+    Chromes.initFolders(mhtmlFile)
 
-    let saveDir = Files.saveDirByMhtml(mhtmlFile);
-
-    const paginationUrls = await Puppe.getPaginationUrls(url);
-
+    const paginationUrls = await Puppe.getPaginationUrls(globalThis.mhtmlUrl);
 
 
 }
