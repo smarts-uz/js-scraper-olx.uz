@@ -4,6 +4,7 @@ import { Files } from "./Files.js";
 import path from "path";
 import fs from "fs";
 import { Chromes } from "./Chromes.js";
+import { Dialogs } from "./Dialogs.js";
 
 export class Puppe {
   constructor(parameters) {
@@ -92,12 +93,25 @@ export class Puppe {
 
 
 
-  static async extractUserIdWithRegex(page, selector = 'a[data-testid="user-profile-link"]') {
+  static async extractUserIdWithRegex(page) {
+
+    const selector = 'a[data-testid="user-profile-link"]'
 
     return page.$eval(selector, a => {
       const href = a.getAttribute('href') || '';
-      const m = href.match(/\/list\/user\/([^\/]+)\/?/);
-      return m ? decodeURIComponent(m[1]) : null;
+      console.info('href', href);
+
+      let match = href.match(/\/list\/user\/([^\/]+)\/?/);
+      match = match ? decodeURIComponent(match[1]) : null;
+      console.info('match User', match);
+
+      if (!match) {
+        match = new URL(href).host;   // → "bitovayatexnikalg.olx.uz"
+        console.info("match Host:", match);
+      }
+
+      return match;
+
     }).catch(() => null);
 
   }
@@ -166,7 +180,7 @@ export class Puppe {
   }
 
 
-  static async scrapeOlxMhtml(url, saveDir, showPhone = false, browser = null) {
+  static async scrapeOlxMhtml(url, browser = null) {
 
     if (!browser)
       browser = await Puppe.runChrome(process.env.Headless === 'true');
@@ -183,18 +197,32 @@ export class Puppe {
     const userId = await Puppe.extractUserIdWithRegex(page);
     console.log(`User ID: ${userId}`);
 
-    if (showPhone) {
-      const phone = await Puppe.showPhone(page);
-      console.info(`Phone: ${phone}`);
+    if (!userId) {
+      Dialogs.warningBox(
+        `⚠️ Failed to extract user ID from ${url}. Please check the URL and try again.`
+      );
+      return;
     }
 
     const safeName = await Puppe.pageTitle(page);
+    console.info(`Safe Name: ${safeName}`);
 
-    const filePath = path.join(saveDir, `${safeName}.mhtml`);
-    await Puppe.saveAsMhtml(page, filePath);
+    const userIdPath = path.join(globalThis.saveDir, userId);
+    console.info(`User ID Path: ${userIdPath}`);
+
+    if (!fs.existsSync(userIdPath)) {
+      const phone = await Puppe.showPhone(page);
+
+      console.info(`Phone: ${phone}`);
+      Files.mkdirIfNotExists(userIdPath);
+
+    }
+
+
+    const filePathMhtml = path.join(userIdPath, `${safeName}.mhtml`);
+    await Puppe.saveAsMhtml(page, filePathMhtml);
 
     await page.close();
-    return filePath
   }
 
 

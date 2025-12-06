@@ -35,9 +35,15 @@ async function main() {
 
     //  await Puppe.saveAllPages(mhtmlFile, browser);
 
-    let adUrl = 'https://www.olx.uz/tashkent/q-hisense/?currency=UYE&page=2&search%5Bfilter_enum_state%5D%5B0%5D=new&search%5Border%5D=filter_float_price%3Adesc'
+    /*     let adUrl = 'https://www.olx.uz/tashkent/q-hisense/?currency=UYE&page=2&search%5Bfilter_enum_state%5D%5B0%5D=new&search%5Border%5D=filter_float_price%3Adesc'
+    
+        await Puppe.scrapeCatalogMhtml(adUrl, browser);
+     */
 
-    await Puppe.scrapeCatalogMhtml(adUrl, browser);
+    let adUrl = 'https://www.olx.uz/d/obyavlenie/holodilnik-hisense-side-by-side-no-frost-ot-ofitsialnogo-dilera-ID29X2h.html'
+    
+
+    await Puppe.scrapeOlxMhtml(adUrl, browser);
 
 }
 
