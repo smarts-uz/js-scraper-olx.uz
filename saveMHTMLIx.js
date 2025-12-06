@@ -1,5 +1,4 @@
 import { processUrlFiles } from './parseMHTMLs/parseMHTML.js';
-import { Utils } from './utils/Logs.js';
 import { argv } from 'process';
 import path from 'path';
 import { fileURLToPath } from 'url';

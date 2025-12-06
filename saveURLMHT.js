@@ -1,9 +1,7 @@
-import { scrapeMultipleSearches } from "./saveURLs/parseUrl.js";
 import fs from "fs";
 import path from "path";
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
-import { Utils } from './utils/Logs.js';
 
 const logger = new Utils().log;
 
