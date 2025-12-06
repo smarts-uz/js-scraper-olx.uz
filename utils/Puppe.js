@@ -443,6 +443,7 @@ URL=${url}`;
     console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
 
     await mainPage.close();
+    await browser.close();
     return uniqueUrls;
 
   }
