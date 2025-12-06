@@ -7,6 +7,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 import { Puppe } from './utils/Puppe.js';
+import { Chromes } from './utils/Chromes.js';
 
 
 // Main async function (runs sequentially)
@@ -26,7 +27,7 @@ async function main() {
     let mhtmlFile = argv.mhtml;
     console.log('mhtmlFile:', mhtmlFile)
 
-    let url = Puppe.getUrlFromMht(mhtmlFile);
+    let url = Chromes.getUrlFromMht(mhtmlFile);
     
     let saveDir = Files.saveDirByMhtml(mhtmlFile);
 

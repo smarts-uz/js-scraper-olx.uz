@@ -294,7 +294,7 @@ URL=${url}`;
 
   }
 
-  static async getPaginationUrls(page, searchUrl, saveDir) {
+  static async getPaginationUrls(browser, searchUrl, saveDir) {
 
     let adsCount = 0;
     // Получаем все страницы пагинации
@@ -302,7 +302,7 @@ URL=${url}`;
 
     await mainPage.setViewport({ width: 1280, height: 900 });
     console.info(`📖 Загружаю главную страницу для получения пагинации: ${searchUrl}`);
-    await mainPage.goto(searchUrl, { waitUntil: " ", timeout: 60000 });
+    await mainPage.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     // Прокручиваем вниз для загрузки пагинации
     await Puppe.autoScroll(mainPage);
@@ -310,10 +310,10 @@ URL=${url}`;
 
 
     // Wait for pagination elements to load
-    await page.waitForSelector('ul.pagination-list', { timeout: 10000 }).catch(() => { });
+    await mainPage.waitForSelector('ul.pagination-list', { timeout: 10000 }).catch(() => { });
 
     // Scroll to pagination area to ensure all elements are loaded
-    await page.evaluate(() => {
+    await mainPage.evaluate(() => {
       const paginationContainer = document.querySelector('ul.pagination-list');
       if (paginationContainer) {
         paginationContainer.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -329,7 +329,7 @@ URL=${url}`;
     const maxAttempts = 10;
 
     while (clicked && attempts < maxAttempts) {
-      clicked = await page.evaluate(() => {
+      clicked = await mainPage.evaluate(() => {
         const nextButton = Array.from(document.querySelectorAll('ul.pagination-list li a'))
           .find(el => el.textContent.trim().toLowerCase() === 'next' || el.textContent.trim() === '»');
 
@@ -347,13 +347,13 @@ URL=${url}`;
     }
 
     // Scroll back to top to ensure we can see all pagination
-    await page.evaluate(() => {
+    await mainPage.evaluate(() => {
       window.scrollTo(0, 0);
     });
     await Puppe.sleep(1000);
 
     // Get maximum page number from data-testid attributes
-    const maxPageNumber = await page.evaluate(() => {
+    const maxPageNumber = await mainPage.evaluate(() => {
       let maxPage = 0;
       const pageElements = document.querySelectorAll('[data-testid^="pagination-link-"]');
 
@@ -373,7 +373,7 @@ URL=${url}`;
     // Generate pagination URLs based on page numbers
     const paginationUrls = [];
     if (maxPageNumber > 0) {
-      const currentUrl = page.url();
+      const currentUrl = mainPage.url();
       const urlObj = new URL(currentUrl);
 
       // Generate URLs for all pages from 2 to maxPageNumber
@@ -384,7 +384,7 @@ URL=${url}`;
     }
 
     // Also try multiple approaches to get pagination URLs as fallback
-    const fallbackUrls = await page.evaluate(() => {
+    const fallbackUrls = await mainPage.evaluate(() => {
       // Get all pagination links, not just from ul.pagination-list
       const elements = Array.from(document.querySelectorAll('ul.pagination-list a, .pager a'));
       return elements
@@ -404,7 +404,7 @@ URL=${url}`;
     });
 
     // Also check for data-page attributes or other pagination patterns
-    const additionalUrls = await page.evaluate(() => {
+    const additionalUrls = await mainPage.evaluate(() => {
       const urls = [];
       const baseUrl = window.location.origin;
 
