@@ -71,7 +71,7 @@ export class Files {
    * @returns {boolean} - True if URL exists, false otherwise
    */
   static urlExistsInDirectories(url, currentSaveDir) {
-    const directories = findRelevantDirectories(currentSaveDir);
+    const directories = Files.findRelevantDirectories(currentSaveDir);
     // Check each directory
     for (const dir of directories) {
       // Skip the current save directory

@@ -1,7 +1,8 @@
 
 import puppeteer from "puppeteer";
 import { Files } from "./Files.js";
-
+import path from "path";
+import fs from "fs";
 
 export class Puppe {
   constructor(parameters) {
