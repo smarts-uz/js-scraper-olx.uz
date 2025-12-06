@@ -93,7 +93,41 @@ export class Puppe {
 
 
 
-  static async extractUserIdWithRegex(page) {
+  static async extractUserId(page) {
+
+    const selector = 'a[data-testid="user-profile-link"]'
+
+    let matches = await page.$eval(selector, a => {
+      const href = a.getAttribute('href') || '';
+      console.info('href', href);
+
+
+      let match = href.match(/(https?:\/\/.*\/list\/user\/([^\/]+)\/?)/);
+      match = match ? decodeURIComponent(match[1]) : null;
+      console.info('match User', match);
+
+      if (!match) {
+        match = href.match(/(https?:\/\/([^.]+)\.olx\.uz)/);;   // → "bitovayatexnikalg"
+        console.info("match Host:", match);
+      }
+
+      return match;
+
+    }).catch(() => {
+      console.warn('No user ID found');
+      return null;
+    });
+
+    console.info('matches', matches);
+
+    return matches;
+
+  }
+
+
+
+
+  static async extractContent(page) {
 
     const selector = 'a[data-testid="user-profile-link"]'
 
@@ -112,7 +146,10 @@ export class Puppe {
 
       return match;
 
-    }).catch(() => null);
+    }).catch(() => {
+      console.warn('No user ID found');
+      return null;
+    });
 
   }
 
@@ -193,15 +230,14 @@ export class Puppe {
     await Puppe.autoScroll(page, 1000, 5);
     console.info(`domcontentloaded`);
 
-    const userId = await Puppe.extractUserIdWithRegex(page);
+    const userId = await Puppe.extractUserId(page);
     console.log(`User ID: ${userId}`);
 
-    if (!userId) {
+    if (!userId)
       Dialogs.warningBox(
         `⚠️ Failed to extract user ID from ${url}. Please check the URL and try again.`
       );
-      return;
-    }
+
 
     const safeName = await Puppe.pageTitle(page);
     console.info(`Safe Name: ${safeName}`);

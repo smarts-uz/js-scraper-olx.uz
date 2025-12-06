@@ -41,6 +41,7 @@ async function main() {
      */
 
     let adUrl = 'https://www.olx.uz/d/obyavlenie/holodilnik-hisense-side-by-side-no-frost-ot-ofitsialnogo-dilera-ID29X2h.html'
+    adUrl = 'https://www.olx.uz/d/obyavlenie/srochno-prodaetsya-holodilnik-lg-ID3iCZe.html'
     
 
     await Puppe.scrapeOlxMhtml(adUrl, browser);
