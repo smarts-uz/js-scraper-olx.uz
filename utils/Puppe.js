@@ -138,30 +138,30 @@ export class Puppe {
 
 
 
-
   static async extractContent(page) {
 
-    const selector = 'a[data-testid="user-profile-link"]'
+    const description = await page.$eval(
+      '[data-cy="ad_description"] > div:last-child',
+      el => el.textContent.trim()
+    );
 
-    return page.$eval(selector, a => {
-      const href = a.getAttribute('href') || '';
-      console.info('href', href);
+    console.info('description', description);
 
-      let match = href.match(/\/list\/user\/([^\/]+)\/?/);
-      match = match ? decodeURIComponent(match[1]) : null;
-      console.info('match User', match);
+    return description;
 
-      if (!match) {
-        match = new URL(href).host;   // → "bitovayatexnikalg.olx.uz"
-        console.info("match Host:", match);
-      }
+  }
 
-      return match;
 
-    }).catch(() => {
-      console.warn('No user ID found');
-      return null;
-    });
+  static async extractUserName(page) {
+
+    const username = await page.$eval(
+      '[data-testid="user-profile-user-name"]',
+      el => el.textContent.trim()
+    );
+
+    console.log(username); // "ibrohim"
+
+    return username;
 
   }
 
@@ -265,11 +265,27 @@ export class Puppe {
 
     }
 
-    const filePathURL = path.join(userIdPath, `ALL User.url`);
+    const filePathURL = path.join(userIdPath, `ALL.url`);
     Chromes.saveUrlFile(filePathURL, href);
 
-    const filePathMhtml = path.join(userIdPath, `${safeName}.mhtml`);
-    await Puppe.saveAsMhtml(page, filePathMhtml);
+    const offerPath = path.join(userIdPath, `${safeName}`);
+    console.info(`Offer Path: ${offerPath}`);
+    Files.mkdirIfNotExists(offerPath);
+
+    const filePathContent = path.join(offerPath, `ALL.txt`);
+    const content = await Puppe.extractContent(page);
+    if (content)
+      fs.writeFileSync(filePathContent, content);
+
+    const username = await Puppe.extractUserName(page);
+    if (username)
+      fs.writeFileSync(path.join(offerPath, `${username}.app`), '');
+
+    const filePathMhtml = path.join(offerPath, `ALL.mhtml`);
+    if (!fs.existsSync(filePathMhtml)) {
+      console.info(`Saving ${filePathMhtml}`);
+      await Puppe.saveAsMhtml(page, filePathMhtml);
+    }
 
     await page.close();
   }
@@ -335,7 +351,10 @@ export class Puppe {
     let title = await page.title();
     let safeName = title.replace(/[<>:"/\\|?*]+/g, " ").trim().substring(0, 100);
     if (!safeName) safeName = `OLX ${Date.now()}`;
+
+    safeName = safeName.replace(" на Olx", "");
     console.info(`💾 safeName: ${safeName}`);
+
     return safeName;
   }
 
