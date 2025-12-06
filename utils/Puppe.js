@@ -118,8 +118,34 @@ export class Puppe {
     });
 
     console.info('matches', matches);
+    let { href, match } = matches
 
-    return matches;
+    // matches { href: '/list/user/b6vcO/', match: [ '/list/user/b6vcO/', 'b6vcO' ] }
+    // https://www.olx.uz/list/user/b6vcO/
+    /// https://www.olx.uz
+    if (!href.includes('https://'))
+      href = `https:/${href}`
+
+
+    if (match && match.length > 0) {
+      match = decodeURIComponent(match[1]);
+      console.info('match', match);
+    }
+
+    const returns = { href, match }
+    console.info('returns', returns);
+
+
+    /*
+    matches {
+  href: 'https://bitovayatexnikalg.olx.uz/home/',
+  match: [ 'https://bitovayatexnikalg.olx.uz', 'bitovayatexnikalg' ]
+}
+    */
+
+
+
+    return returns;
 
   }
 

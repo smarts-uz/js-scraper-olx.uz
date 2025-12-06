@@ -34,13 +34,13 @@ async function main() {
     let browser = await Puppe.runChrome(process.env.Headless === 'true');
 
     //  await Puppe.saveAllPages(mhtmlFile, browser);
-
+    let adUrl 
     /*     let adUrl = 'https://www.olx.uz/tashkent/q-hisense/?currency=UYE&page=2&search%5Bfilter_enum_state%5D%5B0%5D=new&search%5Border%5D=filter_float_price%3Adesc'
     
         await Puppe.scrapeCatalogMhtml(adUrl, browser);
      */
 
-    let adUrl = 'https://www.olx.uz/d/obyavlenie/holodilnik-hisense-side-by-side-no-frost-ot-ofitsialnogo-dilera-ID29X2h.html'
+    adUrl = 'https://www.olx.uz/d/obyavlenie/holodilnik-hisense-side-by-side-no-frost-ot-ofitsialnogo-dilera-ID29X2h.html'
     adUrl = 'https://www.olx.uz/d/obyavlenie/srochno-prodaetsya-holodilnik-lg-ID3iCZe.html'
     
 
