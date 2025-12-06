@@ -17,7 +17,22 @@
         "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
       ],
       "console": "integratedTerminal"
-    }, {
+    },
+     {
+      "type": "node",
+      "request": "launch",
+      "name": "Testing",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}\\testing.js",
+      "args": [
+        "--mhtml",
+        "d:\\Humans\\Building\\Equipme\\Produce\\Household\\global.hisense.com, hisense.uz\\Sellings\\hisense.mhtml"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "saveMHTML hisense",

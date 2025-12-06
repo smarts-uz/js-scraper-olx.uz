@@ -1,23 +1,11 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import dotenv from 'dotenv';
-import fs from 'fs/promises';
+import fs from 'fs';
 import { existsSync } from 'fs';
 import puppeteer from 'puppeteer';
 import puppeteerCore from 'puppeteer-core';
-import { Utils } from './Logs.js';
-import { readFileSync } from 'fs';
 import UserAgent from 'user-agents';
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const envpath = path.join(__dirname, "..", ".env");
-const utils = new Utils();
-const logger = utils.log;
-dotenv.config({ path: envpath });
-const headlessENV = process.env.Headless?.toLowerCase() === 'true';
 
 export class Chromes {
 
@@ -29,9 +17,23 @@ export class Chromes {
     console.info(userAgent.toString());
     console.info(JSON.stringify(userAgent.data, null, 2));
 
-
   }
 
+
+  static getUrlFromMht(filePath) {
+
+    // Read MHTML file and extract URL
+    const mhtmlContent = fs.readFileSync(filePath, "utf-8");
+    const urlMatch = mhtmlContent.match(/Snapshot-Content-Location:\s*(.*)/i);
+    const extractedUrl = urlMatch ? urlMatch[1].trim() : null;
+
+    if (!extractedUrl) {
+      console.error("Could not extract URL from MHTML file.");
+      return null;
+    } else {
+      return extractedUrl;
+    }
+  }
 
   static runChrome() {
 
@@ -80,7 +82,7 @@ export class Chromes {
 
 
     const runner = new ChromeRunner();
-    const utils = new Utils();
+
     const chromeLanguages = [
       'fr', 'en-US', 'ru', 'tr', 'de', 'es', 'it', 'ja', 'zh-CN', 'ko', 'ar'
     ];
@@ -110,7 +112,7 @@ export class Chromes {
 
         fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
 
-        browser = await runner.run(profile, lang, userAgent.toString(), is_native);
+        browser = await Chromes.runIxbrowser(profile, lang, userAgent.toString(), is_native);
         const { phoneShown, savedPath } = await scrapeAd(url, outputDir, browser);
         lastSavedPath = savedPath;
         await browser.close();
@@ -120,13 +122,13 @@ export class Chromes {
           success = true;
         } else {
           console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
-          await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
+          console.log(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
 
           if (currentProfileIndex === profileDirs.length - 1) {
             console.error('❌ All profiles failed. Stopping process...');
             profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
             fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-            await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+            console.log(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
             process.exit(1);
           }
           currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -157,7 +159,7 @@ export class Chromes {
           if (currentProfileIndex === profileDirs.length - 1) {
             profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
             fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-            await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+            console.log(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
             process.exit(1);
           }
           currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -167,7 +169,7 @@ export class Chromes {
           if (currentProfileIndex === profileDirs.length - 1) {
             profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
             fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
-            await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
+            console.log(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
             process.exit(1);
           }
           currentProfileIndex = (currentProfileIndex + 1) % profileDirs.length;
@@ -259,7 +261,7 @@ export class Chromes {
         lastSavedPath,
         currentProfileIndex: newProfileIndex,
         globalLangIndex: newGlobalLangIndex,
-      } = await tryProfilesForUrl(
+      } = await Chromes.tryProfilesForUrl(
         url,
         outputDir,
         profileDirs,
@@ -335,7 +337,7 @@ export class Chromes {
   }
 
 
-  async run(rawPath, lang, agent, is_find) {
+  static async runIxbrowser(rawPath, lang, agent, is_find) {
     if (!rawPath) throw new Error('❗ rawPath argumenti kerak (user data dir yo‘li)');
     if (!lang) throw new Error('❗ lang argumenti kerak (lang)');
     if (!is_find) {
@@ -410,7 +412,7 @@ export class Chromes {
       try {
         browser = await puppeteer.launch({
           // executablePath: chromeExePath,
-          headless: headlessENV, // ⚠️ extensionlar faqat headless=false da ishlaydi
+          headless: process.env.Headless === 'true',
           defaultViewport: { width: 800, height: 600 },
           args,
         });

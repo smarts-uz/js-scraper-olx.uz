@@ -23,8 +23,8 @@ async function main() {
 
     Files.dotenv()
 
-    let ymlFile = argv.yaml;
-    console.log('ymlFile:', ymlFile)
+    let mhtmlFile = argv.mhtml;
+    console.log('mhtmlFile:', mhtmlFile)
 
     let allFile = argv.all;
     console.log('allFile:', allFile)

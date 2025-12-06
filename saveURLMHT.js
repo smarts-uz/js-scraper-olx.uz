@@ -3,9 +3,9 @@ import path from "path";
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
 
-const logger = new Utils().log;
 
-const runner = new Utils();
+
+
 
 // Get command line arguments
 const args = process.argv.slice(2);
@@ -75,7 +75,7 @@ const tasks = [
 
 (async () => {
   try {
-    await scrapeMultipleSearches(tasks);
+    await runChrome(tasks);
    await runner.showMessageBox(`All URLs downloaded for ${mhtmlFilePath}`, "Completed");
    process.exit(0);
   } catch (err) {

@@ -1,11 +1,11 @@
 import { processUrlFiles } from './parseMHTMLs/parseMHTML.js';
-import { Utils } from './ALL/Utils.js';
+
 import { argv } from 'process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-const logger = new Utils().log;
+
 
 // Get the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
 const currentFilePath = process.argv[1];
 const currentDir = path.dirname(currentFilePath);
 
-const runner = new Utils();
+
 
 // Append .env to current path
 const envpath = path.join(currentDir, ".env");

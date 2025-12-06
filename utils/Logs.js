@@ -70,9 +70,6 @@ export class Logs {
         }
     }
 
-    async sendTelegramMessage(message) {
-        //  await bot.sendMessage(ADMIN_CHAT_ID, message);
-    }
 
 
     cleanPath(p) {
