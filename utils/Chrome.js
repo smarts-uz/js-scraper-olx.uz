@@ -26,8 +26,8 @@ export class Chromes {
   static userAgent() {
 
     const userAgent = new UserAgent([/Chrome/, { deviceCategory: 'desktop' }]);
-    logger.info(userAgent.toString());
-    logger.info(JSON.stringify(userAgent.data, null, 2));
+    console.info(userAgent.toString());
+    console.info(JSON.stringify(userAgent.data, null, 2));
 
 
   }
@@ -38,13 +38,13 @@ export class Chromes {
     const rawPath = process.argv[2];
 
     if (!rawPath) {
-      logger.error('❗ Foydalanish:');
-      logger.error('  node autoRunChrome.mjs "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\<folder>"');
+      console.error('❗ Foydalanish:');
+      console.error('  node autoRunChrome.mjs "C:\\Users\\Administrator\\AppData\\Roaming\\ixBrowser\\Browser Data\\<folder>"');
       process.exit(1);
     }
 
     const runner = new ChromeRunner(); // CHROME_VERSION avtomatik .env dan olinadi
-    runner.run(rawPath, 'en-us', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36', true).catch(err => logger.error(err));
+    runner.run(rawPath, 'en-us', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36', true).catch(err => console.error(err));
 
 
   }
@@ -58,8 +58,8 @@ export class Chromes {
 
     const runner = new ChromeRunner();
     runner.run(rawPath, profileData.lang, profileData.agent)
-      .then(() => logger.info(""))
-      .catch(err => logger.error("❌ Xatolik:", err.message));
+      .then(() => console.info(""))
+      .catch(err => console.error("❌ Xatolik:", err.message));
 
 
   }
@@ -87,7 +87,7 @@ export class Chromes {
 
     while (!success && attempts < profileDirs.length) {
       const profile = profileDirs[currentProfileIndex];
-      logger.info(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
+      console.info(`🔁 Using profile [${currentProfileIndex + 1}/${profileDirs.length}]: ${profile}`);
 
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -116,14 +116,14 @@ export class Chromes {
         await browser.close();
 
         if (phoneShown) {
-          logger.info(`✅ Phone shown with profile ${profile} (lang: ${lang})`);
+          console.info(`✅ Phone shown with profile ${profile} (lang: ${lang})`);
           success = true;
         } else {
-          logger.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
+          console.warn(`⚠️ Phone NOT shown with profile ${profile} (lang: ${lang})`);
           await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  Phone NOT shown with profile ${profile} (lang: ${lang}) for ${url}`);
 
           if (currentProfileIndex === profileDirs.length - 1) {
-            logger.error('❌ All profiles failed. Stopping process...');
+            console.error('❌ All profiles failed. Stopping process...');
             profileData.description = `❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`;
             fs.writeFileSync(profileIndexFile, JSON.stringify(profileData, null, 2));
             await utils.sendTelegramMessage(`❌ ${currentSavedCount} saved and  All profiles failed for ${url}`);
@@ -133,7 +133,7 @@ export class Chromes {
           globalLangIndex = (globalLangIndex + 1) % chromeLanguages.length;
         }
       } catch (err) {
-        logger.error(`❌ Error with profile ${profile}: ${err.message}`);
+        console.error(`❌ Error with profile ${profile}: ${err.message}`);
         // Check if this is a recoverable error
         const isRecoverableError = err.message.includes('Target closed') ||
           err.message.includes('Protocol error') ||
@@ -144,13 +144,13 @@ export class Chromes {
           try {
             await browser.close();
           } catch (closeErr) {
-            logger.warn(`⚠️ Error closing browser: ${closeErr.message}`);
+            console.warn(`⚠️ Error closing browser: ${closeErr.message}`);
           }
         }
 
         // If it's a recoverable error, try the next profile
         if (isRecoverableError) {
-          logger.info(`🔄 Recoverable error detected. Trying next profile...`);
+          console.info(`🔄 Recoverable error detected. Trying next profile...`);
           // Add a small delay to allow Chrome to fully close
           await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -199,17 +199,17 @@ export class Chromes {
 
     if (!otherDir) otherDir = path.join(inputDir, "@ Other");
 
-    logger.info(`📂 Reading .url files from: ${inputDir}`);
-    logger.info(`💾 Saving MHTML files to: ${outputDir}`);
-    logger.info(`📁 Moving processed .url files to: ${otherDir}`);
+    console.info(`📂 Reading .url files from: ${inputDir}`);
+    console.info(`💾 Saving MHTML files to: ${outputDir}`);
+    console.info(`📁 Moving processed .url files to: ${otherDir}`);
 
     if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
     if (!fs.existsSync(otherDir)) fs.mkdirSync(otherDir, { recursive: true });
 
     const urlObjects = readUrlsFromDirectory(inputDir);
-    logger.info(`🔗 Found ${urlObjects.length} URLs to process`);
+    console.info(`🔗 Found ${urlObjects.length} URLs to process`);
     if (urlObjects.length === 0) {
-      logger.info("📭 No .url files found in the input directory");
+      console.info("📭 No .url files found in the input directory");
       return;
     }
 
@@ -220,7 +220,7 @@ export class Chromes {
 
 
     const browserDataPath = path.join(Folder_Ixbrowser, 'Browser Data');
-    logger.info("📂 Browser Data directory:", browserDataPath);
+    console.info("📂 Browser Data directory:", browserDataPath);
 
     let profileDirs = [];
 
@@ -236,7 +236,7 @@ export class Chromes {
       throw new Error('No profile directories found');
     }
 
-    logger.info("🌐 Starting processing with profiles:", profileDirs);
+    console.info("🌐 Starting processing with profiles:", profileDirs);
 
     let currentProfileIndex = 0;
     let globalLangIndex = 0;
@@ -244,15 +244,15 @@ export class Chromes {
       try {
         const profileData = JSON.parse(fs.readFileSync(profileIndexFile, 'utf8'));
         currentProfileIndex = profileData.currentProfileIndex || 0;
-        logger.info(`🔄 Resuming from profile index: ${currentProfileIndex}`);
+        console.info(`🔄 Resuming from profile index: ${currentProfileIndex}`);
       } catch (err) {
-        logger.warn(`⚠️ Failed to read profile index file: ${err.message}`);
+        console.warn(`⚠️ Failed to read profile index file: ${err.message}`);
       }
     }
 
     for (let i = 0; i < urlObjects.length; i++) {
       const { url, filePath, fileName } = urlObjects[i];
-      logger.info(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
+      console.info(`\n📝 Processing ${i + 1}/${urlObjects.length}: ${url}`);
 
       const {
         success,
@@ -273,20 +273,20 @@ export class Chromes {
       try {
         const destinationPath = path.join(otherDir, fileName);
         fs.renameSync(filePath, destinationPath);
-        logger.info(`➡️ Moved ${fileName} to ${otherDir}`);
+        console.info(`➡️ Moved ${fileName} to ${otherDir}`);
       } catch (err) {
-        logger.error(`⚠️ Failed to move ${fileName}: ${err.message}`);
+        console.error(`⚠️ Failed to move ${fileName}: ${err.message}`);
       }
 
       if (!success) {
 
-        logger.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
+        console.warn(`❗ All profiles exhausted for ${url}. Last saved path (if any): ${lastSavedPath}`);
       } else {
-        logger.info(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
+        console.info(`🏁 Completed ${url}, saved: ${lastSavedPath}`);
       }
     }
 
-    logger.info("\n🏁 All URLs processed!");
+    console.info("\n🏁 All URLs processed!");
     process.exit(0);
   }
 
@@ -368,7 +368,7 @@ export class Chromes {
           .filter(d => d.isDirectory())
           .map(d => this.win.join(extensionBase, d.name));
       } catch {
-        logger.warn('⚠️ Extension papkasi topilmadi yoki bo‘sh:', extensionBase);
+        console.warn('⚠️ Extension papkasi topilmadi yoki bo‘sh:', extensionBase);
       }
 
       if (!existsSync(chromeExePath)) {
@@ -415,9 +415,9 @@ export class Chromes {
           args,
         });
 
-        logger.info('✅ Puppeteer orqali Chrome ishga tushdi.', args);
+        console.info('✅ Puppeteer orqali Chrome ishga tushdi.', args);
       } catch (err) {
-        logger.error('❌ Puppeteer.launch() xatosi:', err.message);
+        console.error('❌ Puppeteer.launch() xatosi:', err.message);
         throw err;
       }
 
@@ -430,9 +430,9 @@ export class Chromes {
       return browser;
     } else {
       const txtPath = utils.findRawPathInTxtFiles(rawPath);
-      if (!txtPath) logger.error("❌ Fayl topilmadi.");
+      if (!txtPath) console.error("❌ Fayl topilmadi.");
 
-      logger.info(`✅ Chrome konfiguratsiya fayli: ${txtPath}`);
+      console.info(`✅ Chrome konfiguratsiya fayli: ${txtPath}`);
 
       // Faylni o‘qish
       const lines = readFileSync(txtPath, "utf8")
@@ -448,7 +448,7 @@ export class Chromes {
       if (!exeMatch) throw new Error("❌ chrome.exe topilmadi!");
 
       const executablePath = exeMatch[1].replace(/\\/g, "\\");
-      logger.info("🧭 Chrome executable:", executablePath);
+      console.info("🧭 Chrome executable:", executablePath);
 
       const regex = /"([^"]+)"|(\S+)/g;
       const args = [];
@@ -462,7 +462,7 @@ export class Chromes {
         .map(a => a.includes(":\\") ? utils.cleanPath(a) : a);
 
 
-      // logger.info("⚙️ Chrome args:", filteredArgs);
+      // console.info("⚙️ Chrome args:", filteredArgs);
       let extPath;
       extPath = filteredArgs.find(a => a.startsWith("--load-extension"));
       extPath = extPath ? extPath.split("=")[1] : null;
@@ -480,7 +480,7 @@ export class Chromes {
 
       const pages = await browser.pages();
       const page = pages.length ? pages[0] : await browser.newPage();
-      logger.info("✅ Puppeteer ishga tushdi!");
+      console.info("✅ Puppeteer ishga tushdi!");
 
       return browser;
     }

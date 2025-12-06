@@ -1,3 +1,7 @@
+
+import puppeteer from "puppeteer";
+
+
 export class Puppe {
   constructor(parameters) {
 
@@ -18,7 +22,7 @@ export class Puppe {
     // Получаем все страницы пагинации
     const mainPage = await localBrowser.newPage();
     await mainPage.setViewport({ width: 1280, height: 900 });
-    logger.info(`📖 Загружаю главную страницу для получения пагинации: ${searchUrl}`);
+    console.info(`📖 Загружаю главную страницу для получения пагинации: ${searchUrl}`);
     await mainPage.goto(searchUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     // Прокручиваем вниз для загрузки пагинации
@@ -28,7 +32,7 @@ export class Puppe {
     const paginationUrls = await getPaginationUrls(mainPage);
     await mainPage.close();
 
-    logger.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
+    console.info(`📑 Найдено ${paginationUrls.length} страниц пагинации`);
 
     // Если пагинация не найдена, обрабатываем только первую страницу
     let urlsToProcess = [searchUrl];
@@ -39,11 +43,11 @@ export class Puppe {
       urlsToProcess = [...new Set(urlsToProcess)];
     }
 
-    logger.info(`📄 Всего будет обработано ${urlsToProcess.length} страниц`);
+    console.info(`📄 Всего будет обработано ${urlsToProcess.length} страниц`);
 
     // Обрабатываем каждую страницу поиска
     for (const [index, url] of urlsToProcess.entries()) {
-      logger.info(`📄 Обрабатываю страницу ${index + 1}/${urlsToProcess.length}: ${url}`);
+      console.info(`📄 Обрабатываю страницу ${index + 1}/${urlsToProcess.length}: ${url}`);
 
       const page = await localBrowser.newPage();
       await page.setViewport({ width: 1280, height: 900 });
@@ -64,7 +68,7 @@ export class Puppe {
 
       // Убираем дубликаты
       adLinks = [...new Set(adLinks)];
-      logger.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
+      console.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
 
       await page.close();
 
@@ -76,7 +80,7 @@ export class Puppe {
 
       // Делаем паузу между страницами
       if (index < urlsToProcess.length - 1) {
-        logger.info("⏳ Пауза перед следующей страницей...");
+        console.info("⏳ Пауза перед следующей страницей...");
         await sleep(3000);
       }
     }
@@ -85,14 +89,14 @@ export class Puppe {
       await localBrowser.close();
     }
 
-    logger.info(`🎉 Сохранено ${adsCount} объявлений с поиска.`);
+    console.info(`🎉 Сохранено ${adsCount} объявлений с поиска.`);
   }
 
   /**
    * Accepts an array of searches and saves all ads
    */
   static async scrapeMultipleSearches(tasks) {
-    logger.info(process.env.HeadlessURL, 'headlessURL');
+    console.info(process.env.HeadlessURL, 'headlessURL');
 
     const browser = await puppeteer.launch({ //komol
       headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
@@ -101,15 +105,15 @@ export class Puppe {
     });
 
     for (const { url, saveDir } of tasks) {
-      await scrapeSearch(url, saveDir, browser);
+      await Puppe.scrapeSearch(url, saveDir, browser);
     }
 
     await browser.close();
-    logger.info("🎉 Все поиски обработаны!");
+    console.info("🎉 Все поиски обработаны!");
   }
 
   static async scrapeMultipleSearchesMht(tasks) {
-    logger.info(process.env.HeadlessURL, 'headlessURL');
+    console.info(process.env.HeadlessURL, 'headlessURL');
 
     const browser = await puppeteer.launch({ //komol
       headless: process.env.HeadlessURL === 'true' || process.env.HeadlessURL === true ? true : process.env.HeadlessURL === 'new' ? 'new' : false,
@@ -118,11 +122,11 @@ export class Puppe {
     });
 
     for (const { url, saveDir } of tasks) {
-      await scrapeSearch(url, saveDir, browser);
+      await Puppe.scrapeSearch(url, saveDir, browser);
     }
 
     await browser.close();
-    logger.info("🎉 Все поиски обработаны!");
+    console.info("🎉 Все поиски обработаны!");
   }
 
 
@@ -158,14 +162,14 @@ export class Puppe {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
-    logger.info(`➡️ Loading ad: ${url}`);
+    console.info(`➡️ Loading ad: ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
     // Random waiting and scrolling to simulate human behavior
     const waitTime = getRandomInt(parseInt(Wait_Min), parseInt(Wait_Max));
     const scrollCount = getRandomInt(parseInt(Scroll_Count_Min), parseInt(Scroll_Count_Max));
 
-    logger.info(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
+    console.info(`⏳ Waiting for ${waitTime}s with ${scrollCount} random scrolls...`);
 
     const timePerScroll = waitTime / (scrollCount + 1);
     const pageHeight = await page.evaluate(() => document.body.scrollHeight);
@@ -177,14 +181,14 @@ export class Puppe {
 
     for (let i = 0; i < scrollCount; i++) {
       const scrollPosition = getRandomInt(0, maxScroll);
-      logger.info(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
+      console.info(`🖱️ Scroll ${i + 1}/${scrollCount}: Scrolling to ${scrollPosition}px...`);
       await page.evaluate(pos => window.scrollTo(0, pos), scrollPosition);
       const scrollDelay = getRandomFloat(0.5, 2.5);
       await new Promise(resolve => setTimeout(resolve, scrollDelay * 1000));
     }
 
     const finalScrollPosition = getRandomInt(0, maxScroll);
-    logger.info(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
+    console.info(`🖱️ Final scroll to ${finalScrollPosition}px before checking phone...`);
     await page.evaluate(pos => window.scrollTo(0, pos), finalScrollPosition);
 
     // ✅ Handle phone number display
@@ -194,17 +198,17 @@ export class Puppe {
       for (const btn of phoneButtons) {
         const visible = await btn.isVisible?.() || await btn.evaluate(el => !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length));
         if (visible) {
-          logger.info('📞 Found visible phone button, clicking...');
+          console.info('📞 Found visible phone button, clicking...');
           await btn.click();
           await page.waitForSelector('[data-testid="contact-phone"]', { timeout: 10000 });
-          logger.info('✅ Phone number displayed!');
+          console.info('✅ Phone number displayed!');
           phoneShown = true;
           break;
         }
       }
       phoneShown = true;
     } catch (err) {
-      logger.warn(`⚠️ Phone handling error: ${err.message}`);
+      console.warn(`⚠️ Phone handling error: ${err.message}`);
     }
 
     // Safe file naming
@@ -220,7 +224,7 @@ export class Puppe {
     if (phoneShown) {
       // ✅ Save as MHTML only if phoneShown = true
       try {
-        logger.info("🧩 Capturing MHTML snapshot...");
+        console.info("🧩 Capturing MHTML snapshot...");
         const cdp = await page.createCDPSession();
         await cdp.send("Page.enable");
 
@@ -230,7 +234,7 @@ export class Puppe {
         try {
           const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
           fs.writeFileSync(filePath, data);
-          logger.info(`💾 Saved (MHTML): ${filePath}`);
+          console.info(`💾 Saved (MHTML): ${filePath}`);
           savedPath = filePath;
         } catch (mhtmlErr) {
           // More specific error handling for MHTML capture
@@ -238,18 +242,18 @@ export class Puppe {
             mhtmlErr.message &&
             mhtmlErr.message.includes("Protocol error (Page.captureSnapshot): Failed  to generate MHTML")
           ) {
-            logger.error(
+            console.error(
               `❌ Failed to capture MHTML for ${url}: The page may contain resources or frames that prevent MHTML generation.`
             );
           } else {
-            logger.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
+            console.error(`⚠️ Failed to capture MHTML for ${url}: ${mhtmlErr.message}`);
           }
         }
       } catch (err) {
-        logger.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
+        console.error(`⚠️ Unexpected error during MHTML capture for ${url}: ${err.message}`);
       }
     } else {
-      logger.info("⚠️ Phone number not shown. Skipping MHTML capture.");
+      console.info("⚠️ Phone number not shown. Skipping MHTML capture.");
     }
 
     await page.close();
@@ -260,7 +264,7 @@ export class Puppe {
   static async scrapeUrl(url, saveDir, browser) {
     // Check if URL already exists in any relevant directory
     if (urlExistsInDirectories(url, saveDir)) {
-      logger.info(`⏭️  URL already exists, skipping: ${url}`);
+      console.info(`⏭️  URL already exists, skipping: ${url}`);
       return;
     }
 
@@ -284,7 +288,7 @@ URL=${url}`;
     }
 
     fs.writeFileSync(filePath, urlFileContent);
-    logger.info(`💾 Saved URL file: ${filePath}`);
+    console.info(`💾 Saved URL file: ${filePath}`);
   }
 
 
@@ -424,7 +428,7 @@ URL=${url}`;
 
       return uniqueUrls;
     } catch (error) {
-      logger.warn("⚠️ Ошибка при получении пагинации:", error.message);
+      console.warn("⚠️ Ошибка при получении пагинации:", error.message);
       return [];
     }
   }

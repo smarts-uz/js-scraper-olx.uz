@@ -23,14 +23,14 @@ const envpath = path.join(currentDir, ".env");
 // === Load environment variables ===
 dotenv.config({ path: envpath });
 
-logger.info(process.cwd(), "cwd");
+console.info(process.cwd(), "cwd");
 
 // Example usage
 async function main() {
   try {
     const mhtmlFilePath = argv[2];
     if (!mhtmlFilePath) {
-      logger.error('Please provide an MHTML file path as a command line argument');
+      console.error('Please provide an MHTML file path as a command line argument');
       process.exit(1);
     }
 
@@ -47,24 +47,24 @@ async function main() {
       const parentDir = path.dirname(mhtmlDir);
       const inputDir = path.join(parentDir, 'App');
       const outputDir = parentDir;
-      logger.info(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
+      console.info(`Processing Theory folder: input from ${inputDir}, output to ${outputDir}`);
       await processUrlFiles(inputDir, outputDir,false);
     } else {
       // Default behavior: set input directory to the 'App' folder next to the MHTML file
       const inputDir = path.join(mhtmlDir, 'App');
       const outputDir = mhtmlDir;
-      logger.info(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
+      console.info(`Processing regular folder: input from ${inputDir}, output to ${outputDir}`);
       await processUrlFiles(inputDir, outputDir,false);
     }
 
-    logger.info('All done!');
+    console.info('All done!');
     await runner.showMessageBox(`All completed for ${fullPath}`, "Completed");
      // Wait for 2 seconds before exiting to ensure all operations are completed
      setTimeout(() => {
        process.exit(0);
      }, 2000);
     } catch (error) {
-    logger.error('Error:', error);
+    console.error('Error:', error);
   }
 }
 

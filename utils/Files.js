@@ -91,13 +91,13 @@ function urlExistsInDirectories(url, currentSaveDir) {
                 return true;
               }
             } catch (err) {
-              logger.warn(`⚠️  Could not read file: ${filePath}`);
+              console.warn(`⚠️  Could not read file: ${filePath}`);
             }
           }
         }
       }
     } catch (err) {
-      logger.warn(`⚠️  Could not access directory: ${dir}`);
+      console.warn(`⚠️  Could not access directory: ${dir}`);
     }
   }
 
