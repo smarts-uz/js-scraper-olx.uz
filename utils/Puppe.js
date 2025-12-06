@@ -18,13 +18,7 @@ export class Puppe {
   /**
    * Saves all ads from a search page, including pagination
    */
-  static async scrapeSearch(url, browser = null) {
-
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 900 });
-
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-    await Puppe.autoScroll(page);
+  static async scrapeSearch(page) {
 
     let adLinks = await page.$$eval(
       'a[href*="/obyavlenie/"], a[href*="/offer/"]',
@@ -39,10 +33,9 @@ export class Puppe {
 
     // Убираем дубликаты
     adLinks = [...new Set(adLinks)];
+
     console.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
     console.info(`adLinks`, adLinks);
-
-    await page.close();
 
     return adLinks
 
@@ -76,7 +69,7 @@ export class Puppe {
    * Auto scroll static
    */
 
-  static async autoScroll(page, distance = 100, setIntervalTime = 100) {
+  static async autoScroll(page, distance = 100, setIntervalTime = 20) {
     await page.evaluate(
       async ({ distance, setIntervalTime }) => {
         await new Promise((resolve) => {
@@ -220,6 +213,7 @@ export class Puppe {
     if (fs.existsSync(globalThis.mhtmlPageDirAllJson)) {
 
       const mhtmlPageDirAllJson = JSON.parse(fs.readFileSync(globalThis.mhtmlPageDirAllJson, 'utf8'));
+
       for (const pageUrl of mhtmlPageDirAllJson) {
         console.info(`➡️ Loading Olx Post: ${pageUrl}`);
         await Puppe.scrapeCatalogMhtml(pageUrl, globalThis.mhtmlPageDir, browser);
@@ -244,6 +238,9 @@ export class Puppe {
     console.info(`domcontentloaded`);
 
     const safeName = await Puppe.pageTitle(page);
+
+    let adLinks = await Puppe.scrapeSearch(page)
+    console.info(`adLinks`, adLinks)
 
     const filePath = path.join(saveDir, `${safeName}.mhtml`);
     await Puppe.saveAsMhtml(page, filePath);
