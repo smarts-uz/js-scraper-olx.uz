@@ -28,14 +28,12 @@ async function main() {
     console.log('mhtmlFile:', mhtmlFile)
 
     let url = Chromes.getUrlFromMht(mhtmlFile);
-    
+
     let saveDir = Files.saveDirByMhtml(mhtmlFile);
 
-   const browser = await Puppe.runChrome(process.env.HeadlessURL === 'true');
+    const paginationUrls = await Puppe.getPaginationUrls(url);
 
-    const paginationUrls = await Puppe.getPaginationUrls(browser, url, saveDir);
-  
-  
+
 
 }
 

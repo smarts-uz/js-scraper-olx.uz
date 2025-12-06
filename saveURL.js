@@ -30,7 +30,7 @@ let saveDir = Files.saveDirByMhtml(mhtmlFilePath);
 
 (async () => {
   try {
-    const browser = await Puppe.runChrome(process.env.HeadlessURL === 'true');
+    const browser = await Puppe.runChrome(process.env.HeadlessPhone === 'true');
   
    //  await Puppe.scrapeSearch(browser, url, saveDir);
     await Puppe.scrapeSearch(browser, url, saveDir, false);

@@ -91,7 +91,8 @@ export class Puppe {
    * Accepts an array of searches and saves all ads
    */
   static async runChrome(headless) {
-    console.info(process.env.HeadlessURL, 'headlessURL');
+
+    console.info(headless, 'headless');
 
     const browser = await puppeteer.launch({
       headless: headless,
@@ -299,9 +300,10 @@ URL=${url}`;
 
   }
 
-  static async getPaginationUrls(browser, searchUrl, saveDir) {
+  static async getPaginationUrls(searchUrl) {
 
-    let adsCount = 0;
+    const browser = await Puppe.runChrome(process.env.Headless === 'true');
+
     // Получаем все страницы пагинации
     const mainPage = await browser.newPage();
 
