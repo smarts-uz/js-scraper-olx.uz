@@ -113,7 +113,7 @@ export class Puppe {
    * Auto scroll static
    */
 
-  static async autoScroll(page, distance = 400, setIntervalTime = 10) {
+  static async autoScroll(page, distance = 100, setIntervalTime = 100) {
     await page.evaluate(
       async ({ distance, setIntervalTime }) => {
         await new Promise((resolve) => {
@@ -215,8 +215,12 @@ export class Puppe {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
+    
     console.info(`➡️ Loading ad: ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    
+    await Puppe.autoScroll(page);
+    console.info(`domcontentloaded`);
 
     const userId = await Puppe.extractUserIdWithRegex(page);
     console.log(`User ID: ${userId}`);
