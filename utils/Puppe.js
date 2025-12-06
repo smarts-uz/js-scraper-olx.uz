@@ -160,7 +160,6 @@ export class Puppe {
         const { data } = await cdp.send("Page.captureSnapshot", { format: "mhtml" });
         fs.writeFileSync(filePath, data);
         console.info(`💾 Saved (MHTML): ${filePath}`);
-        savedPath = filePath;
       } catch (mhtmlErr) {
         // More specific error handling for MHTML capture
         if (
@@ -191,7 +190,7 @@ export class Puppe {
     console.info(`➡️ Loading Olx Post: ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    await Puppe.autoScroll(page);
+    await Puppe.autoScroll(page, 1000, 5);
     console.info(`domcontentloaded`);
 
     const userId = await Puppe.extractUserIdWithRegex(page);
@@ -263,7 +262,7 @@ export class Puppe {
     console.info(`➡️ Loading Catalog: ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
 
-    await Puppe.autoScroll(page);
+    await Puppe.autoScroll(page, 300, 10);
     console.info(`domcontentloaded`);
 
     const safeName = await Puppe.pageTitle(page);
