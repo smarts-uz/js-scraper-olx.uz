@@ -20,7 +20,6 @@ async function main() {
         })
         .parse();
 
-
     Files.dotenv()
 
     let mhtmlFile = argv.mhtml;

@@ -18,74 +18,37 @@ export class Puppe {
   /**
    * Saves all ads from a search page, including pagination
    */
-  static async scrapeSearch(browser, searchUrl, saveDir, isUrl = true) {
+  static async scrapeSearch(url, browser = null) {
 
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 900 });
 
-    const paginationUrls = await Puppe.getPaginationUrls(browser);
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+    await Puppe.autoScroll(page);
 
+    let adLinks = await page.$$eval(
+      'a[href*="/obyavlenie/"], a[href*="/offer/"]',
+      (els) =>
+        els
+          .map((el) => el.getAttribute("href"))
+          .filter(Boolean)
+          .map((href) =>
+            href.startsWith("http") ? href : "https://www.olx.uz" + href
+          )
+    );
 
+    // Убираем дубликаты
+    adLinks = [...new Set(adLinks)];
+    console.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
+    console.info(`adLinks`, adLinks);
 
-    // Если пагинация не найдена, обрабатываем только первую страницу
-    let urlsToProcess = [searchUrl];
-    if (paginationUrls.length > 0) {
-      // Add original search URL and all pagination URLs
-      urlsToProcess = [searchUrl, ...paginationUrls];
-      // Remove duplicates
-      urlsToProcess = [...new Set(urlsToProcess)];
-    }
+    await page.close();
 
-    console.info(`📄 Всего будет обработано ${urlsToProcess.length} страниц`);
+    return adLinks
 
-    // Обрабатываем каждую страницу поиска
-    for (const [index, url] of urlsToProcess.entries()) {
-      console.info(`📄 Обрабатываю страницу ${index + 1}/${urlsToProcess.length}: ${url}`);
-
-      const page = await browser.newPage();
-      await page.setViewport({ width: 1280, height: 900 });
-
-      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await Puppe.autoScroll(page);
-
-      let adLinks = await page.$$eval(
-        'a[href*="/obyavlenie/"], a[href*="/offer/"]',
-        (els) =>
-          els
-            .map((el) => el.getAttribute("href"))
-            .filter(Boolean)
-            .map((href) =>
-              href.startsWith("http") ? href : "https://www.olx.uz" + href
-            )
-      );
-
-      // Убираем дубликаты
-      adLinks = [...new Set(adLinks)];
-      console.info(`📌 Найдено ${adLinks.length} объявлений на этой странице.`);
-
-      await page.close();
-
-      // Обрабатываем каждое объявление
-      for (const adUrl of adLinks) {
-        adsCount++;
-        if (isUrl)
-          await Puppe.scrapeUrl(browser, adUrl, saveDir);
-        else
-          await Puppe.scrapeMhtml(browser, adUrl, saveDir, false);
-
-      }
-
-      // Делаем паузу между страницами
-      if (index < urlsToProcess.length - 1) {
-        console.info("⏳ Пауза перед следующей страницей...");
-        await Puppe.sleep(3000);
-      }
-    }
-
-    if (!browser) {
-      await browser.close();
-    }
-
-    console.info(`🎉 Сохранено ${adsCount} объявлений с поиска.`);
   }
+
+
 
   /**
    * Accepts an array of searches and saves all ads
