@@ -70,7 +70,7 @@ export class Puppe {
    * Auto scroll static
    */
 
-  static async autoScroll(page, distance = 100, setIntervalTime = 20) {
+  static async autoScroll(page, distance = 300, setIntervalTime = 10) {
     await page.evaluate(
       async ({ distance, setIntervalTime }) => {
         await new Promise((resolve) => {
@@ -214,6 +214,7 @@ export class Puppe {
       const phone = await Puppe.showPhone(page);
 
       console.info(`Phone: ${phone}`);
+      Files.saveInfoToFile(userIdPath, phone);
       Files.mkdirIfNotExists(userIdPath);
 
     }
